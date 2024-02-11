@@ -1,5 +1,5 @@
-#include "../include/simplesquirrel/function.hpp"
-#include "../include/simplesquirrel/exceptions.hpp"
+#include "simplesquirrel/function.hpp"
+#include "simplesquirrel/exceptions.hpp"
 #include <squirrel.h>
 #include <forward_list>
 

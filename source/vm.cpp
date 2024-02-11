@@ -1,6 +1,6 @@
-#include "../include/simplesquirrel/object.hpp"
-#include "../include/simplesquirrel/enum.hpp"
-#include "../include/simplesquirrel/vm.hpp"
+#include "simplesquirrel/object.hpp"
+#include "simplesquirrel/enum.hpp"
+#include "simplesquirrel/vm.hpp"
 #include <squirrel.h>
 #include <sqstdstring.h>
 #include <sqstdsystem.h>

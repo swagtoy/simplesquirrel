@@ -1,4 +1,4 @@
-#include "../include/simplesquirrel/enum.hpp"
+#include "simplesquirrel/enum.hpp"
 #include <squirrel.h>
 #include <forward_list>
 

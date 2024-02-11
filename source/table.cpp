@@ -1,8 +1,8 @@
-#include "../include/simplesquirrel/object.hpp"
-#include "../include/simplesquirrel/function.hpp"
-#include "../include/simplesquirrel/class.hpp"
-#include "../include/simplesquirrel/enum.hpp"
-#include "../include/simplesquirrel/table.hpp"
+#include "simplesquirrel/object.hpp"
+#include "simplesquirrel/function.hpp"
+#include "simplesquirrel/class.hpp"
+#include "simplesquirrel/enum.hpp"
+#include "simplesquirrel/table.hpp"
 #include <squirrel.h>
 #include <forward_list>
 

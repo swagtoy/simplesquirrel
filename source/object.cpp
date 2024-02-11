@@ -1,10 +1,10 @@
-#include "../include/simplesquirrel/object.hpp"
-#include "../include/simplesquirrel/function.hpp"
-#include "../include/simplesquirrel/class.hpp"
-#include "../include/simplesquirrel/instance.hpp"
-#include "../include/simplesquirrel/exceptions.hpp"
-#include "../include/simplesquirrel/table.hpp"
-#include "../include/simplesquirrel/array.hpp"
+#include "simplesquirrel/object.hpp"
+#include "simplesquirrel/function.hpp"
+#include "simplesquirrel/class.hpp"
+#include "simplesquirrel/instance.hpp"
+#include "simplesquirrel/exceptions.hpp"
+#include "simplesquirrel/table.hpp"
+#include "simplesquirrel/array.hpp"
 #include <squirrel.h>
 #include <cstring>
 

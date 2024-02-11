@@ -1,6 +1,6 @@
-#include "../include/simplesquirrel/instance.hpp"
-#include "../include/simplesquirrel/exceptions.hpp"
-#include "../include/simplesquirrel/class.hpp"
+#include "simplesquirrel/instance.hpp"
+#include "simplesquirrel/exceptions.hpp"
+#include "simplesquirrel/class.hpp"
 #include <squirrel.h>
 #include <forward_list>
 

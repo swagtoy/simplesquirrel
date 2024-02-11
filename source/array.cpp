@@ -1,5 +1,5 @@
-#include "../include/simplesquirrel/array.hpp"
-#include "../include/simplesquirrel/exceptions.hpp"
+#include "simplesquirrel/array.hpp"
+#include "simplesquirrel/exceptions.hpp"
 #include <squirrel.h>
 #include <forward_list>
 

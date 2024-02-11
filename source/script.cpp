@@ -1,5 +1,5 @@
-#include "../include/simplesquirrel/object.hpp"
-#include "../include/simplesquirrel/script.hpp"
+#include "simplesquirrel/object.hpp"
+#include "simplesquirrel/script.hpp"
 #include <squirrel.h>
 #include <forward_list>
 

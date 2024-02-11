@@ -1,7 +1,7 @@
-#include "../include/simplesquirrel/object.hpp"
-#include "../include/simplesquirrel/class.hpp"
-#include "../include/simplesquirrel/exceptions.hpp"
-#include "../include/simplesquirrel/function.hpp"
+#include "simplesquirrel/object.hpp"
+#include "simplesquirrel/class.hpp"
+#include "simplesquirrel/exceptions.hpp"
+#include "simplesquirrel/function.hpp"
 #include <squirrel.h>
 #include <forward_list>
 
