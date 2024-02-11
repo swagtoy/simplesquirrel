@@ -38,17 +38,17 @@ namespace ssq {
     /**
      * @ingroup simplesquirrel
      */
-    class Libs {
-    public:
-        typedef int Flag;
-        static const Flag NONE = 0x0000;
-        static const Flag IO = 0x0001;
-        static const Flag BLOB = 0x0002;
-        static const Flag MATH = 0x0004;
-        static const Flag SYSTEM = 0x0008;
-        static const Flag STRING = 0x0010;
-        static const Flag ALL = 0xFFFF;
-    };
+    namespace Libs {
+      enum Flag {
+        NONE = 0x0000,
+        IO = 0x0001,
+        BLOB = 0x0002,
+        MATH = 0x0004,
+        SYSTEM = 0x0008,
+        STRING = 0x0010,
+        ALL = 0xFFFF
+      };
+    }
 
     /**
     * @brief Squirrel Virtual Machine object
@@ -59,7 +59,7 @@ namespace ssq {
         /**
         * @brief Creates a VM with a fixed stack size
         */
-        VM(size_t stackSize, Libs::Flag flags = 0x00);
+        VM(size_t stackSize, uint32_t flags = Libs::NONE);
         /**
         * @brief Destroys the VM and all of this objects
         */
@@ -83,7 +83,7 @@ namespace ssq {
         /**
         * @brief Registers standard template libraries
         */
-        void registerStdlib(Libs::Flag flags);
+        void registerStdlib(uint32_t flags);
         /**
         * @brief Registers print and error functions
         */

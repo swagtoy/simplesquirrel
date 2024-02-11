@@ -13,7 +13,7 @@
 #include <iostream>
 
 namespace ssq {
-    VM::VM(size_t stackSize, Libs::Flag flags):Table() {
+    VM::VM(size_t stackSize, uint32_t flags):Table() {
         vm = sq_open(stackSize);
         sq_resetobject(&obj);
         sq_setforeignptr(vm, this);
@@ -62,7 +62,7 @@ namespace ssq {
         swap(other);
     }
 
-    void VM::registerStdlib(Libs::Flag flags) {
+    void VM::registerStdlib(uint32_t flags) {
         if (flags == 0)return;
         sq_pushroottable(vm);
         if(flags & ssq::Libs::IO)
