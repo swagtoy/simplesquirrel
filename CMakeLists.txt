@@ -8,11 +8,10 @@ include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
 # Some required properties
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Select build type")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
-option(BUILD_TESTS "Build tests" ON)
-option(BUILD_EXAMPLES "Build examples" ON)
+option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_INSTALL "Install library" ON)
 
 # Add third party libraries
