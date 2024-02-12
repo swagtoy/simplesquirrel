@@ -176,11 +176,39 @@ namespace ssq {
         Instance newInstanceNoCtor(const Class& cls) const {
             Instance inst(vm);
             sq_pushobject(vm, cls.getRaw());
-            sq_createinstance(vm, -1);
+            if (SQ_FAILED(sq_createinstance(vm, -1)))
+              throw RuntimeException("Cannot create instance.");
             sq_remove(vm, -2);
             sq_getstackobj(vm, -1, &inst.getRaw());
             sq_addref(vm, &inst.getRaw());
             sq_pop(vm, 1);
+            return inst;
+        }
+        /**
+        * @brief Creates a new instance of class from an existing C++ instance, through a pointer, in a provided table
+        * @param table The Squirrel table to create a slot for the instance in
+        * @param cls The object of a class
+        * @param name The name of the instance
+        * @param ptr The pointer to the class instance
+        * @throws RuntimeException
+        */
+        Instance newInstancePtr(Table& table, const Class& cls, const char* name, SQUserPointer ptr) const {
+            const SQInteger old_top = sq_gettop(vm);
+            sq_pushobject(vm, table.getRaw());
+
+            Instance inst(vm);
+            sq_pushstring(vm, name, -1);
+            sq_pushobject(vm, cls.getRaw());
+            if (SQ_FAILED(sq_createinstance(vm, -1)) || SQ_FAILED(sq_setinstanceup(vm, -1, ptr)))
+              throw RuntimeException("Cannot create instance.");
+            sq_remove(vm, -2);
+            sq_getstackobj(vm, -1, &inst.getRaw());
+            sq_addref(vm, &inst.getRaw());
+
+            if (SQ_FAILED(sq_createslot(vm, -3)))
+              throw std::runtime_error("Couldn't create table slot for instance.");
+
+            sq_settop(vm, old_top);
             return inst;
         }
         /**
