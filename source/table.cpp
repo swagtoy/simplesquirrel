@@ -5,6 +5,8 @@
 #include "simplesquirrel/table.hpp"
 #include <squirrel.h>
 #include <forward_list>
+#include <cassert>
+#include <limits>
 
 namespace ssq {
     Table::Table():Object() {
@@ -48,6 +50,14 @@ namespace ssq {
         sq_newslot(vm, -3, false);
         sq_pop(vm,1); // pop table
         return std::move(table);
+    }
+
+    void Table::remove(const char* name) {
+      assert(sizeof(name) < static_cast<size_t>(std::numeric_limits<SQInteger>::max()));
+      sq_pushobject(vm, obj);
+      sq_pushstring(vm, name, static_cast<SQInteger>(strlen(name)));
+      sq_deleteslot(vm, -2, SQFalse);
+      sq_pop(vm, 1); // pop table
     }
 
     size_t Table::size() {

@@ -127,6 +127,10 @@ namespace ssq {
         inline T get(const char* name) {
             return find(name).to<T>();
         }
+        /**
+         * @brief Removes an entry from this table
+         */
+        void remove(const char* name);
         size_t size();
         /**
          * @brief Adds a new table to this table
