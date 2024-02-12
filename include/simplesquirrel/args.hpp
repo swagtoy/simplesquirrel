@@ -58,7 +58,7 @@ namespace ssq {
                 return T(**p);
             } 
             else if(type == OT_INSTANCE) {
-                sq_getinstanceup(vm, index, &ptr, &typetag);
+                sq_getinstanceup(vm, index, &ptr, &typetag, SQTrue);
                 sq_gettypetag(vm, index, &typetag);
 
                 if(reinterpret_cast<size_t>(typetag) != typeid(T*).hash_code()) {
@@ -90,7 +90,7 @@ namespace ssq {
                 if (reinterpret_cast<size_t>(val) != typeid(T).hash_code()) {
                     throw TypeException("bad cast", typeid(T).name(), "UNKNOWN");
                 }*/
-                if (SQ_FAILED(sq_getinstanceup(vm, index, &val, nullptr))) {
+                if (SQ_FAILED(sq_getinstanceup(vm, index, &val, nullptr, SQTrue))) {
                     throw TypeException("Could not get instance from squirrel stack");
                 }
                 return reinterpret_cast<T>(val);

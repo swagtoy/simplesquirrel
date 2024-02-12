@@ -164,7 +164,7 @@ namespace ssq {
         template<typename T, typename V>
         static SQInteger varGetStub(HSQUIRRELVM vm) {
             T* ptr;
-            sq_getinstanceup(vm, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr);
+            sq_getinstanceup(vm, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr, SQTrue);
 
             typedef V T::*M;
             M* memberPtr = nullptr;
@@ -178,7 +178,7 @@ namespace ssq {
         template<typename T, typename V>
         static SQInteger varSetStub(HSQUIRRELVM vm) {
             T* ptr;
-            sq_getinstanceup(vm, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr);
+            sq_getinstanceup(vm, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr, SQTrue);
 
             typedef V T::*M;
             M* memberPtr = nullptr;

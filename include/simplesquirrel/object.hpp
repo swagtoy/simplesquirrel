@@ -187,7 +187,7 @@ namespace ssq {
             }
             sq_pushobject(vm, obj);
             SQUserPointer val;
-            sq_getinstanceup(vm, -1, &val, nullptr);
+            sq_getinstanceup(vm, -1, &val, nullptr, SQTrue);
             sq_pop(vm, 1);
             return reinterpret_cast<T>(val);
         }
