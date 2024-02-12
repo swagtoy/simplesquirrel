@@ -54,8 +54,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE SSQ_EXPORTS=1 SSQ_DLL=1)
 target_link_libraries(${PROJECT_NAME} ${SQUIRREL_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} ${SQSTDLIB_LIBRARIES})
 
-set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "simplesquirrel/lib")
-set_property(TARGET ${PROJECT_NAME}_static PROPERTY FOLDER "simplesquirrel/lib")
+set_target_properties(${PROJECT_NAME}_static PROPERTIES
+  FOLDER "simplesquirrel/lib"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  FOLDER "simplesquirrel/lib"
+  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
 
 # Install
 if(BUILD_INSTALL)
