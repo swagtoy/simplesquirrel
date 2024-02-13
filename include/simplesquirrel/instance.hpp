@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_INSTANCE_HEADER_H
-#define SSQ_INSTANCE_HEADER_H
 
 #include "object.hpp"
 #include "args.hpp"
@@ -92,5 +90,3 @@ namespace ssq {
     }
 #endif
 }
-
-#endif

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_EXCEPTIONS_HEADER_H
-#define SSQ_EXCEPTIONS_HEADER_H
 
 #include <string>
 #include <sstream>
@@ -107,5 +105,3 @@ namespace ssq {
         std::string message;
     };
 }
-
-#endif

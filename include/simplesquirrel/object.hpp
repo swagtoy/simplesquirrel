@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_OBJECT_HEADER_H
-#define SSQ_OBJECT_HEADER_H
 
 #if !defined(HAS_NOEXCEPT) && !defined(NOEXCEPT)
     #if defined(__clang__)
@@ -206,5 +204,3 @@ namespace ssq {
         bool weak;
     };
 }
-
-#endif

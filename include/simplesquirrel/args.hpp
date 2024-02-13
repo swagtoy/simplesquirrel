@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_ARGS_HEADER_H
-#define SSQ_ARGS_HEADER_H
 
 #include "exceptions.hpp"
 #include <squirrel.h>
@@ -475,5 +473,3 @@ namespace ssq {
     }
 #endif
 }
-
-#endif

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_ENUM_HEADER_H
-#define SSQ_ENUM_HEADER_H
 
 #include "class.hpp"
 
@@ -58,5 +56,3 @@ namespace ssq {
         Enum& operator = (Enum&& other) NOEXCEPT;
     };
 }
-
-#endif

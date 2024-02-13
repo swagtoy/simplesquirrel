@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_BINDING_HEADER_H
-#define SSQ_BINDING_HEADER_H
 
 #include "allocators.hpp"
 #include <functional>
@@ -221,5 +219,3 @@ namespace ssq {
     }
 #endif
 }
-
-#endif

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_VM_HEADER_H
-#define SSQ_VM_HEADER_H
 
 #include "exceptions.hpp"
 #include "table.hpp"
@@ -292,6 +290,4 @@ namespace ssq {
 
 #ifdef _MSC_VER
 #pragma warning( pop )
-#endif
-
 #endif

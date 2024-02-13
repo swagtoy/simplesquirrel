@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_CLASS_HEADER_H
-#define SSQ_CLASS_HEADER_H
 
 #include <functional>
 #include "function.hpp"
@@ -206,5 +204,3 @@ namespace ssq {
     }
 #endif
 }
-
-#endif

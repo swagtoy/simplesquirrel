@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_TABLE_HEADER_H
-#define SSQ_TABLE_HEADER_H
 
 #include "class.hpp"
 
@@ -158,5 +156,3 @@ namespace ssq {
     }
 #endif
 }
-
-#endif

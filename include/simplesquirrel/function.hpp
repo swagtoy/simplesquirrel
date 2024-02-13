@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_FUNCTION_HEADER_H
-#define SSQ_FUNCTION_HEADER_H
 
 #include "object.hpp"
 #include "exceptions.hpp"
@@ -61,5 +59,3 @@ namespace ssq {
     }
 #endif
 }
-
-#endif

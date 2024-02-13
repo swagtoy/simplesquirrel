@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_ALLOCATORS_HEADER_H
-#define SSQ_ALLOCATORS_HEADER_H
 
 #include "object.hpp"
 #include "args.hpp"
@@ -112,5 +110,3 @@ namespace ssq {
     }
 #endif
 }
-
-#endif

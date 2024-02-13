@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_TYPE_HEADER_H
-#define SSQ_TYPE_HEADER_H
 
 #include <squirrel.h>
 
@@ -43,5 +41,3 @@ namespace ssq {
      */
     SSQ_API const char* typeToStr(Type type);
 }
-
-#endif

@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_H
-#define SSQ_H
 
 /**
  * @defgroup simplesquirrel
@@ -17,5 +15,3 @@
 #include "instance.hpp"
 #include "script.hpp"
 #include "vm.hpp"
-
-#endif

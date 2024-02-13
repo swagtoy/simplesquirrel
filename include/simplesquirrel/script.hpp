@@ -1,6 +1,4 @@
 #pragma once
-#ifndef SSQ_SCRIPT_HEADER_H
-#define SSQ_SCRIPT_HEADER_H
 
 #include "object.hpp"
 
@@ -41,5 +39,3 @@ namespace ssq {
         Script& operator = (Script&& other) NOEXCEPT;
     };
 }
-
-#endif
