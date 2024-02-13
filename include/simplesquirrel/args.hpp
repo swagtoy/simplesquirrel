@@ -33,13 +33,21 @@ namespace ssq {
             return 0;
         }
 
-        inline void checkType(HSQUIRRELVM vm, SQInteger index, SQObjectType expected){
+        inline void checkType(HSQUIRRELVM vm, SQInteger index, SQObjectType expected) {
             auto type = sq_gettype(vm, index);
             if (expected == OT_CLOSURE) {
-                if (type != OT_CLOSURE && type != OT_NATIVECLOSURE) throw TypeException("bad cast", typeToStr(Type(expected)), typeToStr(Type(type)));
+                if (type != OT_CLOSURE && type != OT_NATIVECLOSURE)
+                  throw TypeException("bad cast", typeToStr(Type(expected)), typeToStr(Type(type)));
                 return;
             }
-            if (type != expected) throw TypeException("bad cast", typeToStr(Type(expected)), typeToStr(Type(type)));
+            if (type != expected)
+              throw TypeException("bad cast", typeToStr(Type(expected)), typeToStr(Type(type)));
+        }
+
+        inline void checkTypeNumber(HSQUIRRELVM vm, SQInteger index, bool allow_bool) {
+            auto type = sq_gettype(vm, index);
+            if ((allow_bool ? type != OT_BOOL : true) && type != OT_INTEGER && type != OT_FLOAT)
+              throw TypeException("bad cast", allow_bool ? "BOOL|INTEGER|FLOAT" : "INTEGER|FLOAT", typeToStr(Type(type)));
         }
 
         template<typename T>
@@ -107,7 +115,7 @@ namespace ssq {
 
         template<>
         inline char popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get char from squirrel stack");
             return static_cast<char>(val);
@@ -115,7 +123,7 @@ namespace ssq {
 
         template<>
         inline signed char popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get signed char from squirrel stack");
             return static_cast<signed char>(val);
@@ -123,7 +131,7 @@ namespace ssq {
 
         template<>
         inline short popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get short from squirrel stack");
             return static_cast<short>(val);
@@ -131,7 +139,7 @@ namespace ssq {
 
         template<>
         inline int popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get int from squirrel stack");
             return static_cast<int>(val);
@@ -139,7 +147,7 @@ namespace ssq {
 
         template<>
         inline long popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get long from squirrel stack");
             return static_cast<long>(val);
@@ -147,7 +155,7 @@ namespace ssq {
 
         template<>
         inline unsigned char popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned char from squirrel stack");
             return static_cast<unsigned char>(val);
@@ -155,7 +163,7 @@ namespace ssq {
 
         template<>
         inline unsigned short popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned short from squirrel stack");
             return static_cast<unsigned short>(val);
@@ -163,7 +171,7 @@ namespace ssq {
 
         template<>
         inline unsigned int popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned int from squirrel stack");
             return static_cast<unsigned int>(val);
@@ -171,7 +179,7 @@ namespace ssq {
 
         template<>
         inline unsigned long popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned long from squirrel stack");
             return static_cast<unsigned long>(val);
@@ -180,7 +188,7 @@ namespace ssq {
 #ifdef _SQ64
         template<>
         inline long long popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get long long from squirrel stack");
             return static_cast<long long>(val);
@@ -188,7 +196,7 @@ namespace ssq {
 
         template<>
         inline unsigned long long popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, true);
             SQInteger val;
             if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned long long from squirrel stack");
             return static_cast<unsigned long long>(val);
@@ -198,7 +206,7 @@ namespace ssq {
 #ifdef SQUSEDOUBLE
         template<>
         inline double popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_INTEGER);
+            checkTypeNumber(vm, index, false);
             SQFloat val;
             if (SQ_FAILED(sq_getfloat(vm, index, &val))) throw TypeException("Could not get double from squirrel stack");
             return static_cast<double>(val);
@@ -207,7 +215,7 @@ namespace ssq {
 
         template<>
         inline float popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_FLOAT);
+            checkTypeNumber(vm, index, false);
             SQFloat val;
             if (SQ_FAILED(sq_getfloat(vm, index, &val))) throw TypeException("Could not get float from squirrel stack");
             return static_cast<float>(val);
@@ -215,7 +223,7 @@ namespace ssq {
 
         template<>
         inline bool popValue(HSQUIRRELVM vm, SQInteger index){
-            checkType(vm, index, OT_BOOL);
+            checkTypeNumber(vm, index, true);
             SQBool val;
             if (SQ_FAILED(sq_getbool(vm, index, &val))) throw TypeException("Could not get bool from squirrel stack");
             return val == 1;

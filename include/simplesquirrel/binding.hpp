@@ -5,6 +5,7 @@
 #include "allocators.hpp"
 #include <functional>
 #include <cstring>
+#include <string>
 
 namespace ssq {
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -43,21 +44,22 @@ namespace ssq {
 
         template <typename T> struct Param {static const char type = '.';};
 
-        template <> struct Param<char> {static const char type = 'i';};
-        template <> struct Param<signed char> {static const char type = 'i';};
-        template <> struct Param<short> {static const char type = 'i';};
-        template <> struct Param<int> {static const char type = 'i';};
-        template <> struct Param<long> {static const char type = 'i';};
-        template <> struct Param<unsigned char> {static const char type = 'i';};
-        template <> struct Param<unsigned short> {static const char type = 'i';};
-        template <> struct Param<unsigned int> {static const char type = 'i';};
-        template <> struct Param<unsigned long> {static const char type = 'i';};
+        template <> struct Param<bool> {inline static const std::string type = "b|n";};
+        template <> struct Param<char> {inline static const std::string type = "b|n";};
+        template <> struct Param<signed char> {inline static const std::string type = "b|n";};
+        template <> struct Param<short> {inline static const std::string type = "b|n";};
+        template <> struct Param<int> {inline static const std::string type = "b|n";};
+        template <> struct Param<long> {inline static const std::string type = "b|n";};
+        template <> struct Param<unsigned char> {inline static const std::string type = "b|n";};
+        template <> struct Param<unsigned short> {inline static const std::string type = "b|n";};
+        template <> struct Param<unsigned int> {inline static const std::string type = "b|n";};
+        template <> struct Param<unsigned long> {inline static const std::string type = "b|n";};
 #ifdef _SQ64
-        template <> struct Param<long long> {static const char type = 'i';};
-        template <> struct Param<unsigned long long> {static const char type = 'i';};
+        template <> struct Param<long long> {inline static const std::string type = "b|n";};
+        template <> struct Param<unsigned long long> {inline static const std::string type = "b|n";};
 #endif
-        template <> struct Param<float> {static const char type = 'f';};
-        template <> struct Param<double> {static const char type = 'f';};
+        template <> struct Param<float> {static const char type = 'n';};
+        template <> struct Param<double> {static const char type = 'n';};
 #ifdef SQUNICODE
         template <> struct Param<std::wstring> {static const char type = 's';};
 #else
@@ -71,15 +73,13 @@ namespace ssq {
         template <> struct Param<std::nullptr_t> {static const char type = 'o';};
 
         template <typename A>
-        static void paramPackerType(char* ptr) {
-            *ptr = Param<typename std::remove_const<typename std::remove_reference<A>::type>::type>::type;
+        static void paramPackerType(std::string& str) {
+            str += Param<typename std::remove_const<typename std::remove_reference<A>::type>::type>::type;
         }
 
         template <typename ...B>
-        static void paramPacker(char* ptr) {
-            int _[] = { 0, (paramPackerType<B>(ptr++), 0)... };
-            (void)_;
-            *ptr = '\0';
+        static void paramPacker(std::string& str) {
+            int _[] = { 0, (paramPackerType<B>(str), 0)... };
         }
 
         template<typename Ret, typename... Args>
@@ -192,11 +192,11 @@ namespace ssq {
             sq_pushstring(vm, name, strlen(name));
 
             bindUserData(vm, func);
-            static char params[33];
+            std::string params;
             paramPacker<void, Args...>(params);
 
             sq_newclosure(vm, &detail::func<1, R, Args...>::global, 1);
-            sq_setparamscheck(vm, nparams + 1, params);
+            sq_setparamscheck(vm, nparams + 1, params.c_str());
             if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
                 throw TypeException("Failed to bind function");
             }
@@ -209,11 +209,11 @@ namespace ssq {
             sq_pushstring(vm, name, strlen(name));
 
             bindUserData(vm, func);
-            static char params[33];
+            std::string params;
             paramPacker<Args...>(params);
 
             sq_newclosure(vm, &detail::func<0, R, Args...>::global, 1);
-            sq_setparamscheck(vm, nparams, params);
+            sq_setparamscheck(vm, nparams, params.c_str());
             if(SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
                 throw TypeException("Failed to bind member function");
             }
