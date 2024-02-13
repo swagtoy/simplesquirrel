@@ -108,7 +108,7 @@ namespace ssq {
 
             sq_pushstring(vm, "constructor", -1);
             bindUserData<T*>(vm, allocator);
-            static char params[33];
+            std::string params;
             paramPacker<T*, Args...>(params);
 
             if (release) {
@@ -117,7 +117,7 @@ namespace ssq {
                 sq_newclosure(vm, &detail::classAllocatorNoRelease<T, Args...>, 1);
             }
 
-            sq_setparamscheck(vm, nparams + 1, params);
+            sq_setparamscheck(vm, nparams + 1, params.c_str());
             sq_newslot(vm, -3, false); // Add the constructor method
 
             sq_newslot(vm, -3, SQFalse); // Add the class
