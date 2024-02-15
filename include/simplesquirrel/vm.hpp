@@ -204,7 +204,7 @@ namespace ssq {
             sq_addref(vm, &inst.getRaw());
 
             if (SQ_FAILED(sq_createslot(vm, -3)))
-              throw std::runtime_error("Couldn't create table slot for instance.");
+              throw RuntimeException("Couldn't create table slot for instance.");
 
             sq_settop(vm, old_top);
             return inst;
