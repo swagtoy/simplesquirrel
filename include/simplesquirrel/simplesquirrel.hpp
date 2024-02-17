@@ -5,6 +5,7 @@
  * @brief Yet another simple binding in C++11 for Squirrel scripting language
  */
 
+#include "exposable_class.hpp"
 #include "type.hpp"
 #include "exceptions.hpp"
 #include "object.hpp"

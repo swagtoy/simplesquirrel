@@ -91,6 +91,8 @@ namespace ssq {
 
         template<typename T, typename... Args>
         static Object addClass(HSQUIRRELVM vm, const char* name, const std::function<T*(Args...)>& allocator, HSQOBJECT& base, bool release = true) {
+            static_assert(std::is_base_of<ExposableClass, T>::value, "Exposed classes must inherit ssq::ExposableClass.");
+
             static const auto hashCode = typeid(T*).hash_code();
             static const std::size_t nparams = sizeof...(Args);
 
@@ -137,6 +139,8 @@ namespace ssq {
 
         template<typename T>
         static Object addAbstractClass(HSQUIRRELVM vm, const char* name, HSQOBJECT& base) {
+            static_assert(std::is_base_of<ExposableClass, T>::value, "Exposed classes must inherit ssq::ExposableClass.");
+
             static const auto hashCode = typeid(T*).hash_code();
             Object clsObj(vm);
 

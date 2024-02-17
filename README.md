@@ -309,6 +309,8 @@ int main(){
 Binding of classes is done via `ssq::VM::addClass(...)`. You have to expose your class to VM. Otherwise 
 any of your classes will be passed around in squirrel as user data and not as an instance. 
 
+To expose a class, it must inherit `ssq::ExposableClass`.
+
 You don't need to expose your class if you do not wish to use it in Squirrel as an instance. Any
 classes or any types that are not integers, strings, booleans, will be automatically converted into 
 Squirrel user data. User data can be moved around, pushed to Squirrel or returned from. User data 
@@ -318,7 +320,9 @@ to use `std::unique_ptr` as userdata because it does not allow a copy.
 ```cpp
 #include <simplesquirrel/simplesquirrel.hpp>
 
-class Foo {
+// #include <simplesquirrel/exposable_class.hpp>
+
+class Foo : public ssq::ExposableClass {
 public:
     Foo(const std::string& msg):msg(msg) {
     }

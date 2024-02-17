@@ -1,7 +1,10 @@
 #pragma once
 
 #include "exceptions.hpp"
+#include "exposable_class.hpp"
+
 #include <squirrel.h>
+#include <cassert>
 #include <iostream>
 #include <typeinfo>
 #include <vector>
@@ -50,11 +53,13 @@ namespace ssq {
 
         template<typename T>
         inline T popValue(HSQUIRRELVM vm, SQInteger index){
-            SQObjectType type = sq_gettype(vm, index);
+            const SQObjectType type = sq_gettype(vm, index);
             SQUserPointer ptr;
-            SQUserPointer typetag;
             if(type == OT_USERDATA) {
-                sq_getuserdata(vm, index, &ptr, &typetag);
+                SQUserPointer typetag;
+                if (SQ_FAILED(sq_getuserdata(vm, index, &ptr, &typetag))) {
+                    throw TypeException("Could not get instance from squirrel stack");
+                }
 
                 if(reinterpret_cast<size_t>(typetag) != typeid(T).hash_code()) {
                     throw TypeException("bad cast", typeid(T).name(), "UNKNOWN");
@@ -64,14 +69,19 @@ namespace ssq {
                 return T(**p);
             } 
             else if(type == OT_INSTANCE) {
-                sq_getinstanceup(vm, index, &ptr, &typetag, SQTrue);
-                sq_gettypetag(vm, index, &typetag);
-
-                if(reinterpret_cast<size_t>(typetag) != typeid(T*).hash_code()) {
-                    throw TypeException("bad cast", typeid(T).name(), "UNKNOWN");
+                if (SQ_FAILED(sq_getinstanceup(vm, index, &ptr, nullptr, SQTrue))) {
+                    throw TypeException("Could not get instance from squirrel stack");
                 }
 
-                T* p = reinterpret_cast<T*>(ptr);
+                T* p;
+                if constexpr (std::is_base_of<ExposableClass, T>::value) {
+                    p = static_cast<T*>(reinterpret_cast<ExposableClass*>(ptr));
+                }
+                else {
+                    p = dynamic_cast<T*>(reinterpret_cast<ExposableClass*>(ptr));
+                    assert(p);
+                }
+
                 return T(*p);
             }
             else {
@@ -81,25 +91,31 @@ namespace ssq {
 
         template<typename T>
         inline T popPointer(HSQUIRRELVM vm, SQInteger index) {
-            auto type = sq_gettype(vm, index);
+            const SQObjectType type = sq_gettype(vm, index);
+            SQUserPointer ptr;
             if(type == OT_USERPOINTER) {
-                SQUserPointer val;
-                if (SQ_FAILED(sq_getuserpointer(vm, index, &val))) {
+                if (SQ_FAILED(sq_getuserpointer(vm, index, &ptr))) {
                     throw TypeException("Could not get instance from squirrel stack");
                 }
-                return reinterpret_cast<T>(val);
+                return reinterpret_cast<T>(ptr);
             }
             else {
-                if (type != OT_INSTANCE) throw TypeException("bad cast", typeToStr(Type(OT_INSTANCE)), typeToStr(Type(type)));
-                SQUserPointer val;
-                /*sq_gettypetag(vm, index, &val);
-                if (reinterpret_cast<size_t>(val) != typeid(T).hash_code()) {
-                    throw TypeException("bad cast", typeid(T).name(), "UNKNOWN");
-                }*/
-                if (SQ_FAILED(sq_getinstanceup(vm, index, &val, nullptr, SQTrue))) {
+                if (type != OT_INSTANCE) {
+                    throw TypeException("bad cast", typeToStr(Type(OT_INSTANCE)), typeToStr(Type(type)));
+                }
+
+                if (SQ_FAILED(sq_getinstanceup(vm, index, &ptr, nullptr, SQTrue))) {
                     throw TypeException("Could not get instance from squirrel stack");
                 }
-                return reinterpret_cast<T>(val);
+
+                if constexpr (std::is_base_of<ExposableClass, T>::value) {
+                    return static_cast<T>(reinterpret_cast<ExposableClass*>(ptr));
+                }
+                else {
+                    T p = dynamic_cast<T>(reinterpret_cast<ExposableClass*>(ptr));
+                    assert(p);
+                    return p;
+                }
             }
         }
 

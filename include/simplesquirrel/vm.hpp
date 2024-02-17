@@ -190,7 +190,7 @@ namespace ssq {
         * @param ptr The pointer to the class instance
         * @throws RuntimeException
         */
-        Instance newInstancePtr(Table& table, const Class& cls, const char* name, SQUserPointer ptr) const {
+        Instance newInstancePtr(Table& table, const Class& cls, const char* name, ExposableClass* ptr) const {
             const SQInteger old_top = sq_gettop(vm);
             sq_pushobject(vm, table.getRaw());
 
