@@ -1,6 +1,8 @@
 #pragma once
 
 #include "allocators.hpp"
+
+#include <cassert>
 #include <functional>
 #include <cstring>
 #include <string>
@@ -88,14 +90,22 @@ namespace ssq {
         }
 
         template<typename T, typename... Args>
-        static Object addClass(HSQUIRRELVM vm, const char* name, const std::function<T*(Args...)>& allocator, bool release = true) {
+        static Object addClass(HSQUIRRELVM vm, const char* name, const std::function<T*(Args...)>& allocator, HSQOBJECT& base, bool release = true) {
             static const auto hashCode = typeid(T*).hash_code();
             static const std::size_t nparams = sizeof...(Args);
 
             Object clsObj(vm);
             
             sq_pushstring(vm, name, strlen(name));
-            sq_newclass(vm, false);
+            if (sq_isnull(base)) {
+              sq_newclass(vm, SQFalse);
+            }
+            else {
+              sq_pushobject(vm, base);
+              assert(sq_gettype(vm, -1) == OT_CLASS);
+
+              sq_newclass(vm, SQTrue);
+            }
 
             HSQOBJECT obj;
             sq_getstackobj(vm, -1, &obj);
@@ -126,12 +136,20 @@ namespace ssq {
         }
 
         template<typename T>
-        static Object addAbstractClass(HSQUIRRELVM vm, const char* name) {
+        static Object addAbstractClass(HSQUIRRELVM vm, const char* name, HSQOBJECT& base) {
             static const auto hashCode = typeid(T*).hash_code();
             Object clsObj(vm);
 
             sq_pushstring(vm, name, strlen(name));
-            sq_newclass(vm, false);
+            if (sq_isnull(base)) {
+              sq_newclass(vm, SQFalse);
+            }
+            else {
+              sq_pushobject(vm, base);
+              assert(sq_gettype(vm, -1) == OT_CLASS);
+
+              sq_newclass(vm, SQTrue);
+            }
 
             HSQOBJECT obj;
             sq_getstackobj(vm, -1, &obj);
