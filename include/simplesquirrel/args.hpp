@@ -120,6 +120,11 @@ namespace ssq {
         }
 
         template<>
+        inline HSQUIRRELVM popPointer(HSQUIRRELVM vm, SQInteger) {
+            return vm;
+        }
+
+        template<>
         inline Object popValue(HSQUIRRELVM vm, SQInteger index){
             Object val(vm);
             if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw TypeException("Could not get Object from squirrel stack");

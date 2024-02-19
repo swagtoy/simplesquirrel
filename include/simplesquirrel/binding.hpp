@@ -177,8 +177,6 @@ namespace ssq {
         struct func {
             static SQInteger global(HSQUIRRELVM vm) {
                 try {
-                    static const std::size_t nparams = sizeof...(Args);
-
                     FuncPtr<R(Args...)>* funcPtr;
                     sq_getuserdata(vm, -1, reinterpret_cast<void**>(&funcPtr), nullptr);
 
@@ -221,6 +219,22 @@ namespace ssq {
                 throw TypeException("Failed to bind function");
             }
         }
+        template<typename R, typename... Args>
+        static void addFunc(HSQUIRRELVM vm, const char* name, const std::function<R(HSQUIRRELVM, Args...)>& func) {
+            static const std::size_t nparams = sizeof...(Args);
+
+            sq_pushstring(vm, name, strlen(name));
+
+            bindUserData(vm, func);
+            std::string params;
+            paramPacker<void, Args...>(params);
+
+            sq_newclosure(vm, &detail::func<0, R, HSQUIRRELVM, Args...>::global, 1);
+            sq_setparamscheck(vm, nparams + 1, params.c_str());
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw TypeException("Failed to bind function");
+            }
+        }
 
         template<typename R, typename... Args>
         static void addMemberFunc(HSQUIRRELVM vm, const char* name, const std::function<R(Args...)>& func, bool isStatic) {
@@ -233,6 +247,22 @@ namespace ssq {
             paramPacker<Args...>(params);
 
             sq_newclosure(vm, &detail::func<0, R, Args...>::global, 1);
+            sq_setparamscheck(vm, nparams, params.c_str());
+            if(SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
+                throw TypeException("Failed to bind member function");
+            }
+        }
+        template<typename R, typename... Args>
+        static void addMemberFunc(HSQUIRRELVM vm, const char* name, const std::function<R(HSQUIRRELVM, Args...)>& func, bool isStatic) {
+            static const std::size_t nparams = sizeof...(Args);
+
+            sq_pushstring(vm, name, strlen(name));
+
+            bindUserData(vm, func);
+            std::string params;
+            paramPacker<Args...>(params);
+
+            sq_newclosure(vm, &detail::func<-1, R, HSQUIRRELVM, Args...>::global, 1);
             sq_setparamscheck(vm, nparams, params.c_str());
             if(SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
                 throw TypeException("Failed to bind member function");
