@@ -44,19 +44,19 @@ namespace ssq {
 
         template <typename T> struct Param {static const char type = '.';};
 
-        template <> struct Param<bool> {inline static const std::string type = "b|n";};
-        template <> struct Param<char> {inline static const std::string type = "b|n";};
-        template <> struct Param<signed char> {inline static const std::string type = "b|n";};
-        template <> struct Param<short> {inline static const std::string type = "b|n";};
-        template <> struct Param<int> {inline static const std::string type = "b|n";};
-        template <> struct Param<long> {inline static const std::string type = "b|n";};
-        template <> struct Param<unsigned char> {inline static const std::string type = "b|n";};
-        template <> struct Param<unsigned short> {inline static const std::string type = "b|n";};
-        template <> struct Param<unsigned int> {inline static const std::string type = "b|n";};
-        template <> struct Param<unsigned long> {inline static const std::string type = "b|n";};
+        template <> struct Param<bool> {static const std::string type;};
+        template <> struct Param<char> {static const std::string type;};
+        template <> struct Param<signed char> {static const std::string type;};
+        template <> struct Param<short> {static const std::string type;};
+        template <> struct Param<int> {static const std::string type;};
+        template <> struct Param<long> {static const std::string type;};
+        template <> struct Param<unsigned char> {static const std::string type;};
+        template <> struct Param<unsigned short> {static const std::string type;};
+        template <> struct Param<unsigned int> {static const std::string type;};
+        template <> struct Param<unsigned long> {static const std::string type;};
 #ifdef _SQ64
-        template <> struct Param<long long> {inline static const std::string type = "b|n";};
-        template <> struct Param<unsigned long long> {inline static const std::string type = "b|n";};
+        template <> struct Param<long long> {static const std::string type;};
+        template <> struct Param<unsigned long long> {static const std::string type;};
 #endif
         template <> struct Param<float> {static const char type = 'n';};
         template <> struct Param<double> {static const char type = 'n';};

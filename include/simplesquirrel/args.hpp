@@ -51,6 +51,17 @@ namespace ssq {
               throw TypeException("bad cast", allow_bool ? "BOOL|INTEGER|FLOAT" : "INTEGER|FLOAT", typeToStr(Type(type)));
         }
 
+        template<typename T> inline typename std::enable_if<std::is_base_of<ExposableClass, T>::value, T>::type
+        popInstance(HSQUIRRELVM vm, SQUserPointer ptr) {
+            return static_cast<T>(static_cast<ExposableClass*>(ptr));
+        }
+        template<typename T> inline typename std::enable_if<!std::is_base_of<ExposableClass, T>::value, T>::type
+        popInstance(HSQUIRRELVM vm, SQUserPointer ptr) {
+            T p = dynamic_cast<T>(static_cast<ExposableClass*>(ptr));
+            assert(p);
+            return p;
+        }
+
         template<typename T>
         inline T popValue(HSQUIRRELVM vm, SQInteger index){
             const SQObjectType type = sq_gettype(vm, index);
@@ -73,16 +84,7 @@ namespace ssq {
                     throw TypeException("Could not get instance from squirrel stack");
                 }
 
-                T* p;
-                if constexpr (std::is_base_of<ExposableClass, T>::value) {
-                    p = static_cast<T*>(reinterpret_cast<ExposableClass*>(ptr));
-                }
-                else {
-                    p = dynamic_cast<T*>(reinterpret_cast<ExposableClass*>(ptr));
-                    assert(p);
-                }
-
-                return T(*p);
+                return T(*popInstance<T*>(vm, ptr));
             }
             else {
                 throw TypeException("bad cast", "INSTANCE", typeToStr(Type(type)));
@@ -108,14 +110,7 @@ namespace ssq {
                     throw TypeException("Could not get instance from squirrel stack");
                 }
 
-                if constexpr (std::is_base_of<ExposableClass, T>::value) {
-                    return static_cast<T>(reinterpret_cast<ExposableClass*>(ptr));
-                }
-                else {
-                    T p = dynamic_cast<T>(reinterpret_cast<ExposableClass*>(ptr));
-                    assert(p);
-                    return p;
-                }
+                return popInstance<T>(vm, ptr);
             }
         }
 
