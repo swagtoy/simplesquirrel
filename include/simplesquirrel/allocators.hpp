@@ -47,7 +47,7 @@ namespace ssq {
 
         template<class T, class... Args, size_t... Is>
         static T* callConstructor(HSQUIRRELVM vm, FuncPtr<T*(Args...)>* funcPtr, index_list<Is...>) {
-            return funcPtr->ptr->operator()(detail::pop<Args>(vm, Is + 2)...);
+            return funcPtr->ptr->operator()(detail::pop<typename std::remove_reference<Args>::type>(vm, Is + 2)...);
         }
 
         template<class T, class... Args>
