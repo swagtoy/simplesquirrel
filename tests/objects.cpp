@@ -178,7 +178,7 @@ TEST_CASE("Test stack manipulation") {
     REQUIRE_THROWS(table.get<std::string>("one"));
     REQUIRE(top == vm.getTop());
 
-    struct Car {
+    struct Car : public ssq::ExposableClass {
         std::string manufacturer;
         int year;
         std::string color;
@@ -303,7 +303,7 @@ TEST_CASE("Test nullptr") {
 }
 
 TEST_CASE("Test param packer") {
-    char ptr[64];
+    std::string ptr;
 
     ssq::detail::paramPacker<int>(ptr);
     REQUIRE(std::string(ptr) == "i");

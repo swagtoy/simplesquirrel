@@ -365,7 +365,7 @@ TEST_CASE("Pass class object as user data") {
 }
 
 TEST_CASE("Pass class object as copy instance") {
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& value):value(value) {
         }
@@ -470,7 +470,7 @@ TEST_CASE("Return userdata") {
 }
 
 TEST_CASE("Return instance") {
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& value):value(value) {
         }
@@ -660,7 +660,7 @@ TEST_CASE("Test passing instance") {
 	class GuiButton;
 	static GuiButton* buttonPtr = nullptr;
 	
-	class GuiButton {
+	class GuiButton : public ssq::ExposableClass {
 	public:
 		GuiButton(const std::string& label):label(label) {
 			buttonPtr = this;

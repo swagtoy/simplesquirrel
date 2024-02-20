@@ -113,7 +113,7 @@ TEST_CASE("Register class") {
 
     static Foo* ptr;
 
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(int val):val(val) {
             ptr = this;
@@ -208,7 +208,7 @@ TEST_CASE("Register class with std::string type") {
 
     static Foo* ptr;
 
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& val) :val(val) {
             ptr = this;
@@ -301,7 +301,7 @@ TEST_CASE("Register class with std::string type using lambdas") {
 
     static Foo* ptr;
 
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& val) :val(val) {
             ptr = this;
@@ -401,7 +401,7 @@ static void testTypeClass(T value) {
 
     static Foo* ptr;
     
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const T& value):value(value) {
             ptr = this;
@@ -507,7 +507,7 @@ void testTypeClass(std::string value) {
 
     static Foo* ptr;
     
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& value):value(value) {
             ptr = this;
@@ -682,7 +682,7 @@ TEST_CASE("Register class with member variables") {
 
     static std::unique_ptr<Foo> cpy;
 
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(int x, int y, std::string s):varX(x),varY(y),varS(s) {
             cpy.reset(new Foo(*this));
@@ -739,7 +739,7 @@ TEST_CASE("Register class with member variables") {
 }
 
 TEST_CASE("Register class and push as pointer") {
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& msg):msg(msg) {
             
@@ -813,7 +813,7 @@ TEST_CASE("Register class and push as pointer") {
 }
 
 TEST_CASE("Register class and push as userpointer") {
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& msg):msg(msg) {
             
@@ -874,7 +874,7 @@ TEST_CASE("Register class and extend it") {
     static Foo* fooPtr;
     static std::string fooMsg;
 
-    class Foo {
+    class Foo : public ssq::ExposableClass {
     public:
         Foo(const std::string& msg):msg(msg) {
             fooPtr = this;
