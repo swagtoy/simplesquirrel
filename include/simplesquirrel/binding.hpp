@@ -187,7 +187,6 @@ namespace ssq {
                 }
             }
         };
-
         template<int offet, typename... Args>
         struct func<offet, void, Args...> {
             static SQInteger global(HSQUIRRELVM vm) {
@@ -197,6 +196,19 @@ namespace ssq {
 
                     callGlobal(vm, funcPtr, index_range<offet, sizeof...(Args) + offet>());
                     return 0;
+                } catch (std::exception& e) {
+                    return sq_throwerror(vm, e.what());
+                }
+            }
+        };
+        template<int offet, typename... Args>
+        struct func<offet, SQInteger, Args...> {
+            static SQInteger global(HSQUIRRELVM vm) {
+                try {
+                    FuncPtr<SQInteger(Args...)>* funcPtr;
+                    sq_getuserdata(vm, -1, reinterpret_cast<void**>(&funcPtr), nullptr);
+
+                    return callGlobal(vm, funcPtr, index_range<offet, sizeof...(Args) + offet>());
                 } catch (std::exception& e) {
                     return sq_throwerror(vm, e.what());
                 }
