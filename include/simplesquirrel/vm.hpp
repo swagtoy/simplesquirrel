@@ -55,6 +55,11 @@ namespace ssq {
     class SSQ_API VM: public Table {
     public:
         /**
+        * @brief Obtains a pointer to the global simplesquirrel VM instance from a Squirrel VM
+        */
+        static VM* get(HSQUIRRELVM vm);
+
+        /**
         * @brief Creates a VM with a fixed stack size
         */
         VM(size_t stackSize, uint32_t flags = Libs::NONE);
@@ -94,6 +99,21 @@ namespace ssq {
         * @brief Registers compilation error function
         */
         void setCompileErrorFunc(SqCompileErrorFunc compileErrorFunc);
+        /**
+        * @brief Saves an arbitrary user-defined pointer
+        */
+        void setForeignPtr(void* ptr);
+        /**
+        * @brief Gets the saved arbitrary user-defined pointer
+        */
+        void* getForeignPtr() const;
+        /**
+        * @brief Gets the saved arbitrary user-defined pointer, casted to a provided type
+        */
+        template<typename T>
+        T* getForeignPtr() const {
+            return static_cast<T*>(foreignPtr);
+        }
         /**
         * @brief Returns the index of the top slot of the stack
         */
@@ -247,14 +267,14 @@ namespace ssq {
         * @brief Prints stack objects
         */
         void debugStack() const;
-		/**
+        /**
         * @brief Add registered class object into the table of known classes
         */
-		void addClassObj(size_t hashCode, const HSQOBJECT& obj);
-		/**
+        void addClassObj(size_t hashCode, const HSQOBJECT& obj);
+        /**
         * @brief Get registered class object from hash code
         */
-		const HSQOBJECT& getClassObj(size_t hashCode);
+        const HSQOBJECT& getClassObj(size_t hashCode);
         /**
         * @brief Copy assingment operator
         */
@@ -266,7 +286,8 @@ namespace ssq {
     private:
         std::unique_ptr<CompileException> compileException;
         std::unique_ptr<RuntimeException> runtimeException;
-		std::unordered_map<size_t, HSQOBJECT> classMap;
+        std::unordered_map<size_t, HSQOBJECT> classMap;
+        void* foreignPtr;
 
         static void pushArgs();
 

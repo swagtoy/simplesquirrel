@@ -8,15 +8,22 @@
 #include <sqstdblob.h>
 #include <sqstdio.h>
 #include <forward_list>
+#include <cassert>
 #include <cstdarg>
 #include <cstring>
 #include <iostream>
 
 namespace ssq {
+    VM* VM::get(HSQUIRRELVM vm) {
+        SQUserPointer ptr = sq_getsharedforeignptr(vm);
+        assert(ptr);
+        return static_cast<VM*>(ptr);
+    }
+
     VM::VM(size_t stackSize, uint32_t flags):Table() {
         vm = sq_open(stackSize);
         sq_resetobject(&obj);
-        sq_setforeignptr(vm, this);
+        sq_setsharedforeignptr(vm, this);
 
         registerStdlib(flags);
 
@@ -31,7 +38,7 @@ namespace ssq {
     }
 
     void VM::destroy() {
-		classMap.clear();
+        classMap.clear();
         if (vm != nullptr) {
             sq_resetobject(&obj);
             sq_close(vm);
@@ -48,14 +55,7 @@ namespace ssq {
         Object::swap(other);
         swap(runtimeException, other.runtimeException);
         swap(compileException, other.compileException);
-		swap(classMap, other.classMap);
-
-        if(vm != nullptr) {
-            sq_setforeignptr(vm, this);
-        }
-        if(other.vm != nullptr) {
-            sq_setforeignptr(other.vm, this);
-        }
+        swap(classMap, other.classMap);
     }
         
     VM::VM(VM&& other) NOEXCEPT :Table() {
@@ -89,6 +89,14 @@ namespace ssq {
 
     void VM::setCompileErrorFunc(SqCompileErrorFunc compileErrorFunc) {
         sq_setcompilererrorhandler(vm, compileErrorFunc);
+    }
+
+    void VM::setForeignPtr(void* ptr) {
+        foreignPtr = ptr;
+    }
+
+    void* VM::getForeignPtr() const {
+        return foreignPtr;
     }
 
     SQInteger VM::getTop() const {
@@ -209,8 +217,7 @@ namespace ssq {
             }
         }
 
-        auto ptr = reinterpret_cast<VM*>(sq_getforeignptr(vm));
-        ptr->runtimeException.reset(new RuntimeException(
+        VM::get(vm)->runtimeException.reset(new RuntimeException(
             sErr,
             source,
             funcname,
@@ -225,8 +232,7 @@ namespace ssq {
         const SQChar* source,
         SQInteger line,
         SQInteger column) {
-        auto ptr = reinterpret_cast<VM*>(sq_getforeignptr(vm));
-        ptr->compileException.reset(new CompileException(
+        VM::get(vm)->compileException.reset(new CompileException(
             desc,
             source,
             line,
@@ -247,14 +253,12 @@ namespace ssq {
 	}
 
 	namespace detail {
-	    void addClassObj(HSQUIRRELVM vm, size_t hashCode, const HSQOBJECT& obj) {
-		    VM* machine = reinterpret_cast<VM*>(sq_getforeignptr(vm));
-			machine->addClassObj(hashCode, obj);
-	    }
+    void addClassObj(HSQUIRRELVM vm, size_t hashCode, const HSQOBJECT& obj) {
+        VM::get(vm)->addClassObj(hashCode, obj);
+    }
 
 		const HSQOBJECT& getClassObj(HSQUIRRELVM vm, size_t hashCode) {
-		    VM* machine = reinterpret_cast<VM*>(sq_getforeignptr(vm));
-			return machine->getClassObj(hashCode);
-	    }
+        return VM::get(vm)->getClassObj(hashCode);
     }
+  }
 }
