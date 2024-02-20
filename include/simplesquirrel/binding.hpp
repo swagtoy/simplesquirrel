@@ -80,6 +80,7 @@ namespace ssq {
         template <typename ...B>
         static void paramPacker(std::string& str) {
             int _[] = { 0, (paramPackerType<B>(str), 0)... };
+            (void)_;
         }
 
         template<typename Ret, typename... Args>
