@@ -18,7 +18,7 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~Instance() = default;
+        virtual ~Instance() override = default;
         /**
         * @brief Constructs empty instance
         */

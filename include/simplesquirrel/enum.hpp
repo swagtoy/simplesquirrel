@@ -17,7 +17,7 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~Enum() = default;
+        virtual ~Enum() override = default;
         /**
         * @brief Converts Object to Enum
         * @throws TypeException if the Object is not type of an enum (table)

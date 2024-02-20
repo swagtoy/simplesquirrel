@@ -18,7 +18,7 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~Table() = default;
+        virtual ~Table() override = default;
         /**
         * @brief Converts Object to Table
         * @throws TypeException if the Object is not type of a table

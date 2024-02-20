@@ -30,7 +30,7 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~Class() = default;
+        virtual ~Class() override = default;
         /**
         * @brief Creates a new empty class
         */
@@ -160,30 +160,30 @@ namespace ssq {
         }
 
         template<typename T, typename V>
-        static SQInteger varGetStub(HSQUIRRELVM vm) {
+        static SQInteger varGetStub(HSQUIRRELVM vm_) {
             T* ptr;
-            sq_getinstanceup(vm, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr, SQTrue);
+            sq_getinstanceup(vm_, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr, SQTrue);
 
             typedef V T::*M;
             M* memberPtr = nullptr;
-            sq_getuserdata(vm, -1, reinterpret_cast<SQUserPointer*>(&memberPtr), nullptr);
+            sq_getuserdata(vm_, -1, reinterpret_cast<SQUserPointer*>(&memberPtr), nullptr);
             M member = *memberPtr;
 
-            detail::push(vm, ptr->*member);
+            detail::push(vm_, ptr->*member);
             return 1;
         }
 
         template<typename T, typename V>
-        static SQInteger varSetStub(HSQUIRRELVM vm) {
+        static SQInteger varSetStub(HSQUIRRELVM vm_) {
             T* ptr;
-            sq_getinstanceup(vm, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr, SQTrue);
+            sq_getinstanceup(vm_, 1, reinterpret_cast<SQUserPointer*>(&ptr), nullptr, SQTrue);
 
             typedef V T::*M;
             M* memberPtr = nullptr;
-            sq_getuserdata(vm, -1, reinterpret_cast<SQUserPointer*>(&memberPtr), nullptr);
+            sq_getuserdata(vm_, -1, reinterpret_cast<SQUserPointer*>(&memberPtr), nullptr);
             M member = *memberPtr;
 
-            ptr->*member = detail::pop<V>(vm, 2);
+            ptr->*member = detail::pop<V>(vm_, 2);
             return 0;
         }
 

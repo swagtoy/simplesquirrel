@@ -16,7 +16,7 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~Script() = default;
+        virtual ~Script() override = default;
         /**
         * @brief Swaps two objects
         */

@@ -70,7 +70,7 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~VM();
+        virtual ~VM() override;
         /**
         * @brief Swaps the contents of this VM with another one
         */

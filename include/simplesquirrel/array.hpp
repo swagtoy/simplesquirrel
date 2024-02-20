@@ -19,12 +19,12 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~Array() = default;
+        virtual ~Array() override = default;
         /**
         * @brief Constructs array out of std::vector
         */
         template<typename T>
-        Array(HSQUIRRELVM vm, const std::vector<T>& vector):Object(vm) {
+        Array(HSQUIRRELVM vm_, const std::vector<T>& vector):Object(vm_) {
             sq_newarray(vm, 0);
             sq_getstackobj(vm, -1, &obj);
             sq_addref(vm, &obj);

@@ -18,7 +18,7 @@ namespace ssq {
         /**
         * @brief Destructor
         */
-        virtual ~Function() = default;
+        virtual ~Function() override = default;
         /**
         * @brief Converts Object to Function
         * @throws TypeException if the Object is not type of a function
