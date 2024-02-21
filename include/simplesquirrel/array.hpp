@@ -33,7 +33,7 @@ namespace ssq {
                 detail::push(vm, val);
                 if(SQ_FAILED(sq_arrayappend(vm, -2))) {
                     sq_pop(vm, 2);
-                    throw TypeException("Failed to push value to back of the array");
+                    throw RuntimeException(vm, "Failed to push value to the back of array!");
                 }
             }
 
@@ -65,7 +65,7 @@ namespace ssq {
             detail::push(vm, value);
             if(SQ_FAILED(sq_arrayappend(vm, -2))) {
                 sq_pop(vm, 2);
-                throw TypeException("Failed to push value to back of the array");
+                throw RuntimeException(vm, "Failed to push value to the back of array!");
             }
             sq_pop(vm, 1);
         }
@@ -78,13 +78,13 @@ namespace ssq {
             auto s = sq_getsize(vm, -1);
             if(s == 0) {
                 sq_pop(vm, 1);
-                throw TypeException("Out of bounds");
+                throw RuntimeException(vm, "Failed to pop empty array!");
             }
 
             try {
                 if(SQ_FAILED(sq_arraypop(vm, -1, true))) {
                     sq_pop(vm, 1);
-                    throw TypeException("Failed to pop value from back of the array");
+                    throw RuntimeException(vm, "Failed to pop value from the back of array!");
                 }
                 T ret(detail::pop<T>(vm, -1));
                 sq_pop(vm, 1);
@@ -108,12 +108,12 @@ namespace ssq {
             auto s = static_cast<size_t>(sq_getsize(vm, -1));
             if(index >= s) {
                 sq_pop(vm, 1);
-                throw TypeException("Out of bounds");
+                throw RuntimeException(vm, "Failed to get out-of-bounds element from array!");
             }
             detail::push(vm, index);
             if(SQ_FAILED(sq_get(vm, -2))) {
                 sq_pop(vm, 1);
-                throw TypeException("Failed to get value from the array");
+                throw RuntimeException(vm, "Failed to get value from array!");
             }
             try {
                 T ret(detail::pop<T>(vm, -1));
@@ -139,7 +139,7 @@ namespace ssq {
         template<typename T>
         T back() {
             auto s = size();
-            if (s == 0) throw TypeException("Out of bounds");
+            if (s == 0) throw RuntimeException(vm, "Failed to pop empty array!");
             return get<T>(s - 1);
         }
         /**
@@ -152,13 +152,13 @@ namespace ssq {
             auto s = static_cast<size_t>(sq_getsize(vm, -1));
             if(index >= s) {
                 sq_pop(vm, 1);
-                throw TypeException("Out of bounds");
+                throw RuntimeException(vm, "Failed to get out-of-bounds element from array!");
             }
             detail::push(vm, index);
             detail::push(vm, value);
             if(SQ_FAILED(sq_set(vm, -3))) {
                 sq_pop(vm, 1);
-                throw TypeException("Failed to set value in the array");
+                throw RuntimeException(vm, "Failed to set value in array!");
             }
             sq_pop(vm, 1);
         }
@@ -197,7 +197,7 @@ namespace ssq {
         inline Array popValue(HSQUIRRELVM vm, SQInteger index){
             checkType(vm, index, OT_ARRAY);
             Array val(vm);
-            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw TypeException("Could not get Array from squirrel stack");
+            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw RuntimeException(vm, "Could not get Array from Squirrel stack!");
             sq_addref(vm, &val.getRaw());
             return val;
         }

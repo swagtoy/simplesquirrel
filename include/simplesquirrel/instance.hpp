@@ -75,7 +75,7 @@ namespace ssq {
         inline Instance popValue(HSQUIRRELVM vm, SQInteger index){
             checkType(vm, index, OT_INSTANCE);
             Instance val(vm);
-            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw TypeException("Could not get Instance from squirrel stack");
+            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw RuntimeException(vm, "Could not get Instance from Squirrel stack!");
             sq_addref(vm, &val.getRaw());
             return val;
         }
@@ -84,7 +84,7 @@ namespace ssq {
         inline SqWeakRef popValue(HSQUIRRELVM vm, SQInteger index){
             checkType(vm, index, OT_INSTANCE);
             SqWeakRef val(vm);
-            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw TypeException("Could not get Instance from squirrel stack");
+            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw RuntimeException(vm, "Could not get Instance from Squirrel stack!");
             return val;
         }
     }

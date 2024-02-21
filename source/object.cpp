@@ -39,7 +39,7 @@ namespace ssq {
     }
 
     Object::Object(HSQUIRRELVM vm) : vm(vm), weak(false) {
-        if (vm == nullptr) throw RuntimeException("VM is not initialised");
+        if (vm == nullptr) throw RuntimeException(nullptr, "VM is not initialised");
         sq_resetobject(&obj);
     }
 
@@ -91,7 +91,7 @@ namespace ssq {
     }
 
     Object Object::find(const char* name) const {
-        if (vm == nullptr) throw RuntimeException("VM is not initialised");
+        if (vm == nullptr) throw RuntimeException(nullptr, "VM is not initialised");
 
         Object ret(vm);
 
@@ -100,7 +100,7 @@ namespace ssq {
 
         if (SQ_FAILED(sq_get(vm, -2))) {
             sq_pop(vm, 1);
-            throw NotFoundException(name);
+            throw NotFoundException(vm, name);
         }
 
         sq_getstackobj(vm, -1, &ret.getRaw());

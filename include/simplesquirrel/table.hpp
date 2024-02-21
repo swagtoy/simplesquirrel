@@ -119,7 +119,9 @@ namespace ssq {
             sq_pushobject(vm, obj);
             sq_pushstring(vm, name, strlen(name));
             detail::push<T>(vm, value);
-            sq_newslot(vm, -3, false);
+            if (SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Cannot add entry '" + std::string(name) + "' to table!");
+            }
             sq_pop(vm,1); // pop table
         }
         template<typename T>
@@ -150,7 +152,7 @@ namespace ssq {
         inline Table popValue(HSQUIRRELVM vm, SQInteger index){
             checkType(vm, index, OT_TABLE);
             Table val(vm);
-            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw TypeException("Could not get Table from squirrel stack");
+            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw RuntimeException(vm, "Could not get Table from Squirrel stack!");
             sq_addref(vm, &val.getRaw());
             return val;
         }

@@ -11,14 +11,20 @@ namespace ssq {
     */
     class Exception: public std::exception {
     public:
-        Exception(const char* msg):message(msg) {
+        Exception() : message() {}
+        Exception(HSQUIRRELVM vm, const std::string& msg) : message() {
+            generate_message(vm, msg);
+        }
 
-        }
         virtual const char* what() const throw() override {
-            return message;
+            return message.c_str();
         }
+
+    protected:
+        void generate_message(HSQUIRRELVM vm, const std::string& msg);
+
     private:
-        const char* message;
+        std::string message;
     };
     /**
     * @brief Not Found exception thrown if object with a given name does not exist
@@ -26,17 +32,11 @@ namespace ssq {
     */
     class NotFoundException: public Exception {
     public:
-        NotFoundException(const char* msg):Exception(msg) {
+        NotFoundException(HSQUIRRELVM vm, const std::string& msg) : Exception() {
             std::stringstream ss;
             ss << "Not found: " << msg;
-            message = ss.str();
+            generate_message(vm, ss.str());
         }
-
-        virtual const char* what() const throw() override {
-            return message.c_str();
-        }
-    private:
-        std::string message;
     };
     /**
     * @brief Compile exception thrown during compilation
@@ -44,21 +44,12 @@ namespace ssq {
     */
     class CompileException: public Exception {
     public:
-        CompileException(const char* msg):Exception(msg) { 
-            message = std::string(msg);
-        }
-
-        CompileException(const char* msg, const char* source, int line, int column):Exception(msg) { 
+        CompileException(HSQUIRRELVM vm, const std::string& msg) : Exception(vm, msg) {}
+        CompileException(HSQUIRRELVM vm, const std::string& msg, const char* source, int line, int column) : Exception() {
             std::stringstream ss;
             ss << "Compile error at " << source << ":" << line << ":" << column << " " << msg;
-            message = ss.str();
+            generate_message(vm, ss.str());
         }
-        
-        virtual const char* what() const throw() override {
-            return message.c_str();
-        }
-    private:
-        std::string message;
     };
     /**
     * @brief Type exception thrown if casting between squirrel and C++ objects failed
@@ -66,21 +57,11 @@ namespace ssq {
     */
     class TypeException: public Exception {
     public:
-        TypeException(const char* msg):Exception(msg) {
-            message = std::string(msg);
-        }
-
-        TypeException(const char* msg, const char* expected, const char* got):Exception(msg) {
+        TypeException(const std::string& msg, const char* expected, const char* got) : Exception() {
             std::stringstream ss;
             ss << "Type error " << msg << " expected: " << expected << " got: " << got;
-            message = ss.str();
+            generate_message(nullptr, ss.str());
         }
-
-        virtual const char* what() const throw() override {
-            return message.c_str();
-        }
-    private:
-        std::string message;
     };
     /**
     * @brief Runtime exception thrown if something went wrong during execution
@@ -88,20 +69,11 @@ namespace ssq {
     */
     class RuntimeException: public Exception {
     public:
-        RuntimeException(const char* msg):Exception(msg) {
-            message = std::string(msg);
-        }
-
-        RuntimeException(const char* msg, const char* source, const char* func, int line):Exception(msg) {
+        RuntimeException(HSQUIRRELVM vm, const std::string& msg) : Exception(vm, msg) {}
+        RuntimeException(HSQUIRRELVM vm, const std::string& msg, const char* source, const char* func, int line) : Exception() {
             std::stringstream ss;
             ss << "Runtime error at (" << func << ") " << source << ":" << line << ": " << msg;
-            message = ss.str();
+            generate_message(vm, ss.str());
         }
-
-        virtual const char* what() const throw() override {
-            return message.c_str();
-        }
-    private:
-        std::string message;
     };
 }

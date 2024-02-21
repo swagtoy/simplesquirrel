@@ -106,7 +106,7 @@ namespace ssq {
     Script VM::compileSource(const char* source, const char* name) {
         Script script(vm);
         if(SQ_FAILED(sq_compilebuffer(vm, source, strlen(source), name, true))){
-            if (!compileException)throw CompileException("Source cannot be compiled!");
+            if (!compileException)throw CompileException(vm, "Source cannot be compiled!");
             throw *compileException;
         }
 
@@ -119,7 +119,7 @@ namespace ssq {
     Script VM::compileFile(const char* path) {
         Script script(vm);
         if (SQ_FAILED(sqstd_loadfile(vm, path, true))) {
-            if (!compileException)throw CompileException("File not found or cannot be read!");
+            if (!compileException)throw CompileException(vm, "File not found or cannot be read!");
             throw *compileException;
         }
 
@@ -141,7 +141,7 @@ namespace ssq {
             }
         }
         else {
-            throw RuntimeException("Empty script object");
+            throw RuntimeException(vm, "Empty script object");
         }
     }
 
@@ -150,7 +150,9 @@ namespace ssq {
         sq_pushconsttable(vm);
         sq_pushstring(vm, name, strlen(name));
         detail::push<Object>(vm, enm);
-        sq_newslot(vm, -3, false);
+        if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+            throw RuntimeException(vm, "Failed to add enumerator '" + std::string(name) + "'!");
+        }
         sq_pop(vm,1); // pop table
         return std::move(enm);
     }
@@ -166,7 +168,7 @@ namespace ssq {
         if(SQ_FAILED(sq_call(vm, 1 + nparams, true, true))){
             sq_settop(vm, top);
             if (runtimeException == nullptr)
-                throw RuntimeException("Unknown squirrel runtime error");
+                throw RuntimeException(vm, "Unknown squirrel runtime error");
             throw *runtimeException;
         }
             
@@ -218,6 +220,7 @@ namespace ssq {
         }
 
         VM::get(vm)->runtimeException.reset(new RuntimeException(
+            vm,
             sErr,
             source,
             funcname,
@@ -233,6 +236,7 @@ namespace ssq {
         SQInteger line,
         SQInteger column) {
         VM::get(vm)->compileException.reset(new CompileException(
+            vm,
             desc,
             source,
             line,

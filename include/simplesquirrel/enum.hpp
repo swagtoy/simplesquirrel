@@ -43,7 +43,9 @@ namespace ssq {
             sq_pushobject(vm, obj);
             sq_pushstring(vm, name, strlen(name));
             detail::push<T>(vm, value);
-            sq_newslot(vm, -3, false);
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Failed to add '" + std::string(name) + "' enumerator slot!");
+            }
             sq_pop(vm,1); // pop table
         }
         /**

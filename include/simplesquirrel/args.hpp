@@ -69,7 +69,7 @@ namespace ssq {
             if(type == OT_USERDATA) {
                 SQUserPointer typetag;
                 if (SQ_FAILED(sq_getuserdata(vm, index, &ptr, &typetag))) {
-                    throw TypeException("Could not get instance from squirrel stack");
+                    throw RuntimeException(vm, "Could not get instance from Squirrel stack!");
                 }
 
                 if(reinterpret_cast<size_t>(typetag) != typeid(T).hash_code()) {
@@ -81,7 +81,7 @@ namespace ssq {
             } 
             else if(type == OT_INSTANCE) {
                 if (SQ_FAILED(sq_getinstanceup(vm, index, &ptr, nullptr, SQTrue))) {
-                    throw TypeException("Could not get instance from squirrel stack");
+                    throw RuntimeException(vm, "Could not get instance from Squirrel stack!");
                 }
 
                 return T(*popInstance<T*>(vm, ptr));
@@ -97,7 +97,7 @@ namespace ssq {
             SQUserPointer ptr;
             if(type == OT_USERPOINTER) {
                 if (SQ_FAILED(sq_getuserpointer(vm, index, &ptr))) {
-                    throw TypeException("Could not get instance from squirrel stack");
+                    throw RuntimeException(vm, "Could not get instance from Squirrel stack!");
                 }
                 return reinterpret_cast<T>(ptr);
             }
@@ -107,7 +107,7 @@ namespace ssq {
                 }
 
                 if (SQ_FAILED(sq_getinstanceup(vm, index, &ptr, nullptr, SQTrue))) {
-                    throw TypeException("Could not get instance from squirrel stack");
+                    throw RuntimeException(vm, "Could not get instance from Squirrel stack!");
                 }
 
                 return popInstance<T>(vm, ptr);
@@ -122,7 +122,7 @@ namespace ssq {
         template<>
         inline Object popValue(HSQUIRRELVM vm, SQInteger index){
             Object val(vm);
-            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw TypeException("Could not get Object from squirrel stack");
+            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw RuntimeException(vm, "Could not get Object from squirrel stack");
             sq_addref(vm, &val.getRaw());
             return val;
         }
@@ -131,7 +131,7 @@ namespace ssq {
         inline char popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get char from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get char from squirrel stack");
             return static_cast<char>(val);
         }
 
@@ -139,7 +139,7 @@ namespace ssq {
         inline signed char popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get signed char from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get signed char from squirrel stack");
             return static_cast<signed char>(val);
         }
 
@@ -147,7 +147,7 @@ namespace ssq {
         inline short popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get short from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get short from squirrel stack");
             return static_cast<short>(val);
         }
 
@@ -155,7 +155,7 @@ namespace ssq {
         inline int popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get int from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get int from squirrel stack");
             return static_cast<int>(val);
         }
 
@@ -163,7 +163,7 @@ namespace ssq {
         inline long popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get long from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get long from squirrel stack");
             return static_cast<long>(val);
         }
 
@@ -171,7 +171,7 @@ namespace ssq {
         inline unsigned char popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned char from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get unsigned char from squirrel stack");
             return static_cast<unsigned char>(val);
         }
 
@@ -179,7 +179,7 @@ namespace ssq {
         inline unsigned short popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned short from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get unsigned short from squirrel stack");
             return static_cast<unsigned short>(val);
         }
 
@@ -187,7 +187,7 @@ namespace ssq {
         inline unsigned int popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned int from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get unsigned int from squirrel stack");
             return static_cast<unsigned int>(val);
         }
 
@@ -195,7 +195,7 @@ namespace ssq {
         inline unsigned long popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned long from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get unsigned long from squirrel stack");
             return static_cast<unsigned long>(val);
         }
 
@@ -204,7 +204,7 @@ namespace ssq {
         inline long long popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get long long from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get long long from squirrel stack");
             return static_cast<long long>(val);
         }
 
@@ -212,7 +212,7 @@ namespace ssq {
         inline unsigned long long popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQInteger val;
-            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw TypeException("Could not get unsigned long long from squirrel stack");
+            if (SQ_FAILED(sq_getinteger(vm, index, &val))) throw RuntimeException(vm, "Could not get unsigned long long from squirrel stack");
             return static_cast<unsigned long long>(val);
         }
 #endif
@@ -222,7 +222,7 @@ namespace ssq {
         inline double popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, false);
             SQFloat val;
-            if (SQ_FAILED(sq_getfloat(vm, index, &val))) throw TypeException("Could not get double from squirrel stack");
+            if (SQ_FAILED(sq_getfloat(vm, index, &val))) throw RuntimeException(vm, "Could not get double from squirrel stack");
             return static_cast<double>(val);
         }
 #endif
@@ -231,7 +231,7 @@ namespace ssq {
         inline float popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, false);
             SQFloat val;
-            if (SQ_FAILED(sq_getfloat(vm, index, &val))) throw TypeException("Could not get float from squirrel stack");
+            if (SQ_FAILED(sq_getfloat(vm, index, &val))) throw RuntimeException(vm, "Could not get float from squirrel stack");
             return static_cast<float>(val);
         }
 
@@ -239,7 +239,7 @@ namespace ssq {
         inline bool popValue(HSQUIRRELVM vm, SQInteger index){
             checkTypeNumber(vm, index, true);
             SQBool val;
-            if (SQ_FAILED(sq_getbool(vm, index, &val))) throw TypeException("Could not get bool from squirrel stack");
+            if (SQ_FAILED(sq_getbool(vm, index, &val))) throw RuntimeException(vm, "Could not get bool from squirrel stack");
             return val == 1;
         }
 
@@ -248,7 +248,7 @@ namespace ssq {
         inline std::wstring popValue(HSQUIRRELVM vm, SQInteger index){
             checkType(vm, index, OT_STRING);
             const SQChar* val;
-            if (SQ_FAILED(sq_getstring(vm, index, &val))) throw TypeException("Could not get string from squirrel stack");
+            if (SQ_FAILED(sq_getstring(vm, index, &val))) throw RuntimeException(vm, "Could not get string from squirrel stack");
 
             if(val == nullptr)
             {
@@ -263,7 +263,7 @@ namespace ssq {
         inline std::string popValue(HSQUIRRELVM vm, SQInteger index){
             checkType(vm, index, OT_STRING);
             const SQChar* val;
-            if (SQ_FAILED(sq_getstring(vm, index, &val))) throw TypeException("Could not get string from squirrel stack");
+            if (SQ_FAILED(sq_getstring(vm, index, &val))) throw RuntimeException(vm, "Could not get string from squirrel stack");
 
             if(val == nullptr)
             {

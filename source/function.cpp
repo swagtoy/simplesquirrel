@@ -26,7 +26,7 @@ namespace ssq {
         sq_pushobject(vm, obj);
         if (SQ_FAILED(sq_getclosureinfo(vm, -1, &nparams, &nfreevars))) {
             sq_pop(vm, 1);
-            throw TypeException("Get function info failed");
+            throw RuntimeException(vm, "Getting function info failed!");
         }
         sq_pop(vm, 1);
         return nparams -1;

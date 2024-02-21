@@ -29,7 +29,7 @@ namespace ssq {
         Class cls(vm);
         sq_pushobject(vm, obj);
         if(SQ_FAILED(sq_getclass(vm, -1))) {
-            throw TypeException("Failed to get class from instance");
+            throw RuntimeException(vm, "Failed to get class from instance!");
         }
         sq_getstackobj(vm, -1, &cls.getRaw());
         sq_addref(vm, &cls.getRaw());

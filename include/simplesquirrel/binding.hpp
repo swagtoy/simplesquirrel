@@ -131,9 +131,16 @@ namespace ssq {
             }
 
             sq_setparamscheck(vm, nparams + 1, params.c_str());
-            sq_newslot(vm, -3, false); // Add the constructor method
 
-            sq_newslot(vm, -3, SQFalse); // Add the class
+            // Add the constructor method
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Failed to bind class constructor method!");
+            }
+
+            // Add the class
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Failed to bind class!");
+            }
 
             return clsObj;
         }
@@ -164,7 +171,11 @@ namespace ssq {
             sq_addref(vm, &clsObj.getRaw());
 
             sq_settypetag(vm, -1, reinterpret_cast<SQUserPointer>(hashCode));
-            sq_newslot(vm, -3, SQFalse); // Add the class
+
+            // Add the class
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Failed to bind class!");
+            }
 
             return clsObj;
         }
@@ -229,7 +240,7 @@ namespace ssq {
             sq_newclosure(vm, &detail::func<1, R, Args...>::global, 1);
             sq_setparamscheck(vm, nparams + 1, params.c_str());
             if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
-                throw TypeException("Failed to bind function");
+                throw RuntimeException(vm, "Failed to bind function!");
             }
         }
         template<typename R, typename... Args>
@@ -245,7 +256,7 @@ namespace ssq {
             sq_newclosure(vm, &detail::func<0, R, HSQUIRRELVM, Args...>::global, 1);
             sq_setparamscheck(vm, nparams + 1, params.c_str());
             if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
-                throw TypeException("Failed to bind function");
+                throw RuntimeException(vm, "Failed to bind function!");
             }
         }
 
@@ -261,8 +272,8 @@ namespace ssq {
 
             sq_newclosure(vm, &detail::func<0, R, Args...>::global, 1);
             sq_setparamscheck(vm, nparams, params.c_str());
-            if(SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
-                throw TypeException("Failed to bind member function");
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Failed to bind function!");
             }
         }
         template<typename R, typename... Args>
@@ -277,8 +288,8 @@ namespace ssq {
 
             sq_newclosure(vm, &detail::func<-1, R, HSQUIRRELVM, Args...>::global, 1);
             sq_setparamscheck(vm, nparams, params.c_str());
-            if(SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
-                throw TypeException("Failed to bind member function");
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Failed to bind function!");
             }
         }
     }

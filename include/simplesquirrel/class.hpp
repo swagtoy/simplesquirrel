@@ -69,7 +69,7 @@ namespace ssq {
         */
         template <typename Return, typename Object, typename... Args>
         Function addFunc(const char* name, const std::function<Return(Object*, Args...)>& func, bool isStatic = false) {
-            if (vm == nullptr) throw RuntimeException("VM is not initialised");
+            if (vm == nullptr) throw RuntimeException(nullptr, "VM is not initialised");
             Function ret(vm);
             sq_pushobject(vm, obj);
             detail::addMemberFunc(vm, name, func, isStatic);
@@ -152,7 +152,7 @@ namespace ssq {
             sq_newclosure(vm, stub, 1);
 
             if (SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
-                throw TypeException("Failed to bind member variable to class");
+                throw RuntimeException(vm, "Failed to bind member variable to class!");
             }
 
             sq_pop(vm, 1);
@@ -197,7 +197,7 @@ namespace ssq {
         inline Class popValue(HSQUIRRELVM vm, SQInteger index){
             checkType(vm, index, OT_CLASS);
             Class val(vm);
-            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw TypeException("Could not get Class from squirrel stack");
+            if (SQ_FAILED(sq_getstackobj(vm, index, &val.getRaw()))) throw RuntimeException(vm, "Could not get Class from Squirrel stack!");
             sq_addref(vm, &val.getRaw());
             return val;
         }

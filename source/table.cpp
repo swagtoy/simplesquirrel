@@ -47,7 +47,9 @@ namespace ssq {
         sq_pushobject(vm, obj);
         sq_pushstring(vm, name, strlen(name));
         detail::push<Object>(vm, table);
-        sq_newslot(vm, -3, false);
+        if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+            throw RuntimeException(vm, "Failed to add table '" + std::string(name) + "'!");
+        }
         sq_pop(vm,1); // pop table
         return std::move(table);
     }

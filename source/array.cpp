@@ -38,7 +38,7 @@ namespace ssq {
         while(s--) {
             if(SQ_FAILED(sq_arraypop(vm, -1, true))) {
                 sq_pop(vm, 1);
-                throw TypeException("Failed to pop value from back of the array");
+                throw RuntimeException(vm, "Failed to pop value from back of the array!");
             }
             ret.push_back(detail::pop<Object>(vm, -1));
         }
@@ -51,12 +51,12 @@ namespace ssq {
         auto s = sq_getsize(vm, -1);
         if(s == 0) {
             sq_pop(vm, 1);
-            throw TypeException("Out of bounds");
+            throw RuntimeException(vm, "Failed to pop empty array!");
         }
 
         if(SQ_FAILED(sq_arraypop(vm, -1, false))) {
             sq_pop(vm, 1);
-            throw TypeException("Failed to pop value from back of the array");
+            throw RuntimeException(vm, "Failed to pop value from the back of array!");
         }
         sq_pop(vm, 1);
     }

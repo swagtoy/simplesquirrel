@@ -162,7 +162,7 @@ namespace ssq {
             static const std::size_t params = sizeof...(Args);
 
             if(func.getNumOfParams() != params){
-                throw RuntimeException("Number of arguments does not match");
+                throw RuntimeException(nullptr, "Number of arguments does not match");
             }
 
             auto top = sq_gettop(vm);
@@ -195,7 +195,7 @@ namespace ssq {
             Instance inst(vm);
             sq_pushobject(vm, cls.getRaw());
             if (SQ_FAILED(sq_createinstance(vm, -1)))
-              throw RuntimeException("Cannot create instance.");
+              throw RuntimeException(vm, "Cannot create instance.");
             sq_remove(vm, -2);
             sq_getstackobj(vm, -1, &inst.getRaw());
             sq_addref(vm, &inst.getRaw());
@@ -218,13 +218,13 @@ namespace ssq {
             sq_pushstring(vm, name, -1);
             sq_pushobject(vm, cls.getRaw());
             if (SQ_FAILED(sq_createinstance(vm, -1)) || SQ_FAILED(sq_setinstanceup(vm, -1, ptr)))
-              throw RuntimeException("Cannot create instance.");
+              throw RuntimeException(vm, "Cannot create instance.");
             sq_remove(vm, -2);
             sq_getstackobj(vm, -1, &inst.getRaw());
             sq_addref(vm, &inst.getRaw());
 
             if (SQ_FAILED(sq_createslot(vm, -3)))
-              throw RuntimeException("Couldn't create table slot for instance.");
+              throw RuntimeException(vm, "Couldn't create table slot for instance.");
 
             sq_settop(vm, old_top);
             return inst;
@@ -260,7 +260,9 @@ namespace ssq {
             sq_pushconsttable(vm);
             sq_pushstring(vm, name, strlen(name));
             detail::push<T>(vm, value);
-            sq_newslot(vm, -3, false);
+            if(SQ_FAILED(sq_newslot(vm, -3, SQFalse))) {
+                throw RuntimeException(vm, "Failed to add value '" + std::string(name) + "' to constant table!");
+            }
             sq_pop(vm,1); // pop table
         }
         /**

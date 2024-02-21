@@ -89,7 +89,7 @@ namespace ssq {
             sq_newclosure(vm, dlg, 1);
 
             if(SQ_FAILED(sq_newslot(vm, -3, false))) {
-                throw TypeException("Failed to create table!");
+                throw RuntimeException(vm, "Failed to create table '" + std::string(name) + "'!");
             }
 
             sq_pop(vm, 1); // Pop class obj
