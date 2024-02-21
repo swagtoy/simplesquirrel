@@ -23,7 +23,9 @@
 #include <squirrel.h>
 #include <unordered_map>
 #include <stdint.h>
+
 #include "exceptions.hpp"
+#include "exposable_class.hpp"
 #include "type.hpp"
 
 namespace ssq {
@@ -187,7 +189,7 @@ namespace ssq {
             SQUserPointer val;
             sq_getinstanceup(vm, -1, &val, nullptr, SQTrue);
             sq_pop(vm, 1);
-            return reinterpret_cast<T>(val);
+            return reinterpret_cast<T>(static_cast<ExposableClass*>(val));
         }
         /**
         * @brief Copy assingment operator
