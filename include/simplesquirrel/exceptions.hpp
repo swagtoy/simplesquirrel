@@ -2,7 +2,7 @@
 
 #include <string>
 #include <sstream>
-#include "type.hpp"
+#include <squirrel.h>
 
 namespace ssq {
     /**
