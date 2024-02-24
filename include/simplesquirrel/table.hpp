@@ -2,6 +2,10 @@
 
 #include "class.hpp"
 
+#include <string>
+#include <vector>
+#include <map>
+
 namespace ssq {
     class Enum;
     /**
@@ -51,6 +55,13 @@ namespace ssq {
         * @returns Class object references the found class
         */
         Class findClass(const char* name) const;
+        /**
+        * @brief Finds a table in this table
+        * @throws NotFoundException if table was not found
+        * @throws TypeException if the object found is not a table
+        * @returns Table object references the found class
+        */
+        Table findTable(const char* name) const;
         /**
         * @brief Adds a new class type, which could inherit another existing one, to this table
         * @returns Class object references the added class
@@ -124,19 +135,92 @@ namespace ssq {
             }
             sq_pop(vm,1); // pop table
         }
+        /**
+         * @brief Returns the value of an entry
+         * @throws NotFoundException if an entry with the provided key does not exist
+         */
         template<typename T>
-        inline T get(const char* name) {
+        inline T get(const char* name) const {
             return find(name).to<T>();
         }
+        /**
+         * @brief Provides the value of an entry, if it exists
+         * @returns Whether an entry with the provided key was found
+         */
+        template<typename T>
+        inline bool get(const char* name, T& value) const {
+            try {
+                value = find(name).to<T>();
+                return true;
+            }
+            catch (const NotFoundException&) {
+                return false;
+            }
+        }
+        /**
+         * @brief Returns whether an entry with the provided key exists
+         */
+        bool hasEntry(const char* name) const;
+        /**
+         * @brief Changes the key of an entry with a new one
+         * @throws RuntimeException if either deleting the old entry, or creating the new one, fails
+         */
+        void rename(const char* old_name, const char* new_name);
         /**
          * @brief Removes an entry from this table
          */
         void remove(const char* name);
-        size_t size();
+        /**
+         * @brief Sets a table as delegate for this table
+         */
+        void setDelegate(Table& table);
+        /**
+         * @brief Returns the size of this table
+         */
+        size_t size() const;
+        /**
+         * @brief Returns an array of all keys in this table
+         */
+        std::vector<std::string> getKeys() const;
+        /**
+         * @brief Converts this table to a map of key/value entries
+         */
+        std::map<std::string, ssq::Object> convertRaw() const;
+        /**
+         * @brief Converts this table to a map of key/value entries, where values are of specific type T
+         */
+        template<typename T>
+        std::map<std::string, T> convert() const {
+            const SQInteger old_top = sq_gettop(vm);
+            sq_pushobject(vm, obj);
+
+            std::map<std::string, T> map;
+
+            sq_pushnull(vm); // push iterator
+            while (SQ_SUCCEEDED(sq_next(vm, -2)))
+            {
+                // -1 is the value and -2 is the key
+                const char* key;
+                if (SQ_FAILED(sq_getstring(vm, -2, &key)))
+                    throw RuntimeException(vm, "Cannot get string value for table entry key!");
+                else
+                    map.insert(key, detail::pop<T>(vm, -1));
+
+                sq_pop(vm, 2); // pop key and value of this iteration
+            }
+
+            sq_settop(vm, old_top);
+            return map;
+        }
         /**
          * @brief Adds a new table to this table
          */
         Table addTable(const char* name);
+        /**
+         * @brief Returns a table from the provided key. If such doesn't exist, it's created
+         * @throws TypeException if the entry exists, but the value is not a table
+         */
+        Table getOrCreateTable(const char* name);
         /**
         * @brief Copy assingment operator
         */
