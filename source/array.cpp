@@ -30,31 +30,32 @@ namespace ssq {
         return static_cast<size_t>(s);
     }
 
-    std::vector<Object> Array::convertRaw() {
+    std::vector<Object> Array::convertRaw() const {
         sq_pushobject(vm, obj);
-        SQInteger s = sq_getsize(vm, -1);
+        sq_clone(vm, -1);
+        size_t s = static_cast<size_t>(sq_getsize(vm, -1));
         std::vector<Object> ret;
         ret.reserve(s);
         while(s--) {
-            if(SQ_FAILED(sq_arraypop(vm, -1, true))) {
+            if(SQ_FAILED(sq_arraypop(vm, -1, SQTrue))) {
                 sq_pop(vm, 1);
                 throw RuntimeException(vm, "Failed to pop value from back of the array!");
             }
             ret.push_back(detail::pop<Object>(vm, -1));
         }
-        sq_pop(vm, 1);
+        sq_pop(vm, 2);
         return ret;
     }
 
     void Array::pop() {
         sq_pushobject(vm, obj);
-        auto s = sq_getsize(vm, -1);
+        const size_t s = static_cast<size_t>(sq_getsize(vm, -1));
         if(s == 0) {
             sq_pop(vm, 1);
             throw RuntimeException(vm, "Failed to pop empty array!");
         }
 
-        if(SQ_FAILED(sq_arraypop(vm, -1, false))) {
+        if(SQ_FAILED(sq_arraypop(vm, -1, SQFalse))) {
             sq_pop(vm, 1);
             throw RuntimeException(vm, "Failed to pop value from the back of array!");
         }

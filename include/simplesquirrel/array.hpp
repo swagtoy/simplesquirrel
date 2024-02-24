@@ -165,21 +165,25 @@ namespace ssq {
         /**
          * @brief Converts this array to std::vector of objects
          */
-        std::vector<Object> convertRaw();
+        std::vector<Object> convertRaw() const;
         /**
          * @brief Converts this array to std::vector of specific type T
          */
         template<typename T>
-        std::vector<T> convert() {
+        std::vector<T> convert() const {
             sq_pushobject(vm, obj);
-            auto s = static_cast<size_t>(sq_getsize(vm, -1));
+            sq_clone(vm, -1);
+            size_t s = static_cast<size_t>(sq_getsize(vm, -1));
             std::vector<T> ret;
             ret.reserve(s);
             while(s--) {
-                sq_arraypop(vm, -1, true);
+                if(SQ_FAILED(sq_arraypop(vm, -1, SQTrue))) {
+                    sq_pop(vm, 1);
+                    throw RuntimeException(vm, "Failed to pop value from back of the array!");
+                }
                 ret.push_back(detail::pop<T>(vm, -1));
             }
-            sq_pop(vm, 1);
+            sq_pop(vm, 2);
             return ret;
         }
         /**
