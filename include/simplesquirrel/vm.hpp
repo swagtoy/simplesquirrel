@@ -55,14 +55,29 @@ namespace ssq {
     class SSQ_API VM: public Table {
     public:
         /**
-        * @brief Obtains a pointer to the global simplesquirrel VM instance from a Squirrel VM
+        * @brief Obtains a pointer to the simplesquirrel VM instance of a Squirrel VM
+        * @note The pointer may be NULL. Possible cause would be the thread not being created via simplesquirrel
         */
         static VM* get(HSQUIRRELVM vm);
+        /**
+        * @brief Obtains a reference to the main simplesquirrel VM instance from any Squirrel VM
+        */
+        static VM& getMain(HSQUIRRELVM vm);
 
+        /**
+        * @brief Creates an empty VM object with null VM
+        * @note This object won't be usable
+        */
+        VM();
         /**
         * @brief Creates a VM with a fixed stack size
         */
         VM(size_t stackSize, uint32_t flags = Libs::NONE);
+        /**
+        * @brief Creates a VM object for a thread VM
+        * @note Meant for temporary usage for threads, which do not originate from simplesquirrel
+        */
+        VM(HSQUIRRELVM thread);
         /**
         * @brief Destroys the VM and all of this objects
         */
@@ -87,6 +102,10 @@ namespace ssq {
         * @brief Registers standard template libraries
         */
         void registerStdlib(uint32_t flags);
+        /**
+        * @brief Sets a table as the root table for the VM
+        */
+        void setRootTable(Table& table);
         /**
         * @brief Registers print and error functions
         */
@@ -115,6 +134,14 @@ namespace ssq {
             return static_cast<T*>(foreignPtr);
         }
         /**
+        * @brief Returns whether this VM is a thread
+        */
+        bool isThread() const;
+        /**
+        * @brief Returns the execution state of this VM
+        */
+        SQInteger getState() const;
+        /**
         * @brief Returns the index of the top slot of the stack
         */
         SQInteger getTop() const;
@@ -131,12 +158,19 @@ namespace ssq {
             return *runtimeException.get();
         }
         /**
-        * @brief Compiles a script from a memory
+        * @brief Compiles a script from memory
         * @details The script can be associated with a name as a second parameter.
         * This name is used during runtime error information.
         * @throws CompileException
         */
         Script compileSource(const char* source, const char* name = "buffer");
+        /**
+        * @brief Compiles a script from an input stream
+        * @details The script can be associated with a name as a second parameter.
+        * This name is used during runtime error information.
+        * @throws CompileException
+        */
+        Script compileSource(std::istream& source, const char* name = "buffer");
         /**
         * @brief Compiles a script from a source file
         * @throws CompileException
@@ -148,7 +182,15 @@ namespace ssq {
         * class definitions are assigned to the root table (global table).
         * @throws RuntimeException
         */
-        void run(const Script& script) const;
+        void run(const Script& script);
+        /**
+        * @brief Runs a script and returns its return value as an Object
+        * @details When the script runs for the first time, the contens such as
+        * class definitions are assigned to the root table (global table).
+        * @returns A return value as an Object
+        * @throws RuntimeException
+        */
+        Object runAndReturn(const Script& script);
         /**
         * @brief Calls a global function
         * @param func The instance of a function
@@ -230,6 +272,10 @@ namespace ssq {
             return inst;
         }
         /**
+        * @brief Creates a new thread with a fixed stack size
+        */
+        VM newThread(size_t stackSize) const;
+        /**
         * @brief Creates a new empty table
         */
         Table newTable() const {
@@ -286,10 +332,16 @@ namespace ssq {
         */
         VM& operator = (VM&& other) NOEXCEPT;
     private:
+        HSQOBJECT threadObj;
         std::unique_ptr<CompileException> compileException;
         std::unique_ptr<RuntimeException> runtimeException;
         std::unordered_map<size_t, HSQOBJECT> classMap;
         void* foreignPtr;
+
+        /**
+        * @brief Creates a VM object for a thread
+        */
+        VM(HSQOBJECT thread);
 
         static void pushArgs();
 

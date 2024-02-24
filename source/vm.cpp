@@ -1,6 +1,3 @@
-#include "simplesquirrel/object.hpp"
-#include "simplesquirrel/enum.hpp"
-#include "simplesquirrel/vm.hpp"
 #include <squirrel.h>
 #include <sqstdstring.h>
 #include <sqstdsystem.h>
@@ -13,16 +10,41 @@
 #include <cstring>
 #include <iostream>
 
+#include "simplesquirrel/object.hpp"
+#include "simplesquirrel/enum.hpp"
+#include "simplesquirrel/vm.hpp"
+
+static SQInteger squirrel_istream_read_char(SQUserPointer stream)
+{
+  std::istream* in = reinterpret_cast<std::istream*>(stream);
+
+  const SQInteger c = in->get();
+  if (in->eof())
+    return 0;
+
+  return c;
+}
+
 namespace ssq {
     VM* VM::get(HSQUIRRELVM vm) {
-        SQUserPointer ptr = sq_getsharedforeignptr(vm);
-        assert(ptr);
+        SQUserPointer ptr = sq_getforeignptr(vm);
+        if (!ptr) return nullptr;
         return static_cast<VM*>(ptr);
     }
 
-    VM::VM(size_t stackSize, uint32_t flags):Table() {
+    VM& VM::getMain(HSQUIRRELVM vm) {
+        SQUserPointer ptr = sq_getsharedforeignptr(vm);
+        assert(ptr);
+        return *static_cast<VM*>(ptr);
+    }
+
+    VM::VM():Table(), foreignPtr(nullptr) {
+
+    }
+
+    VM::VM(size_t stackSize, uint32_t flags):Table(), foreignPtr(nullptr) {
         vm = sq_open(stackSize);
-        sq_resetobject(&obj);
+        sq_setforeignptr(vm, this);
         sq_setsharedforeignptr(vm, this);
 
         registerStdlib(flags);
@@ -31,8 +53,37 @@ namespace ssq {
         setRuntimeErrorFunc(&VM::defaultRuntimeErrorFunc);
         setCompileErrorFunc(&VM::defaultCompilerErrorFunc);
 
+        sq_resetobject(&threadObj);
+        sq_resetobject(&obj);
         sq_pushroottable(vm);
-        sq_getstackobj(vm,-1,&obj);
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+        sq_pop(vm, 1);
+    }
+
+    VM::VM(HSQUIRRELVM thread):Table(), foreignPtr(nullptr) {
+        assert(VM::getMain(thread).getHandle() != thread); // Assert this is not the main VM
+
+        vm = thread;
+
+        sq_resetobject(&threadObj);
+        sq_resetobject(&obj);
+        sq_pushroottable(vm);
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+        sq_pop(vm, 1);
+    }
+
+    VM::VM(HSQOBJECT thread):Table(), foreignPtr(nullptr) {
+        assert(thread._type == OT_THREAD);
+
+        threadObj = thread;
+        vm = thread._unVal.pThread;
+        sq_setforeignptr(vm, this);
+
+        sq_resetobject(&obj);
+        sq_pushroottable(vm);
+        sq_getstackobj(vm, -1, &obj);
         sq_addref(vm, &obj);
         sq_pop(vm, 1);
     }
@@ -41,7 +92,12 @@ namespace ssq {
         classMap.clear();
         if (vm != nullptr) {
             sq_resetobject(&obj);
-            sq_close(vm);
+
+            HSQUIRRELVM main_vm = VM::getMain(vm).getHandle();
+            if (vm == main_vm) // This is the main VM
+                sq_close(vm);
+            else if (!sq_isnull(threadObj)) // This is a thread, originating from simplesquirrel
+                sq_release(main_vm, &threadObj);
         }
         vm = nullptr;
     }
@@ -51,14 +107,29 @@ namespace ssq {
     }
 
     void VM::swap(VM& other) NOEXCEPT {
+        if (vm)
+        {
+          sq_setforeignptr(vm, &other);
+          if (sq_getsharedforeignptr(vm) == this)
+            sq_setsharedforeignptr(vm, &other);
+        }
+        if (other.vm)
+        {
+          sq_setforeignptr(other.vm, this);
+          if (sq_getsharedforeignptr(other.vm) == &other)
+            sq_setsharedforeignptr(other.vm, this);
+        }
+
         using std::swap;
         Object::swap(other);
+        swap(threadObj, other.threadObj);
         swap(runtimeException, other.runtimeException);
         swap(compileException, other.compileException);
         swap(classMap, other.classMap);
+        swap(foreignPtr, other.foreignPtr);
     }
         
-    VM::VM(VM&& other) NOEXCEPT :Table() {
+    VM::VM(VM&& other) NOEXCEPT :Table(), foreignPtr(nullptr) {
         swap(other);
     }
 
@@ -76,6 +147,14 @@ namespace ssq {
         if(flags & ssq::Libs::STRING)
             sqstd_register_stringlib(vm);
         sq_pop(vm, 1);
+    }
+
+    void VM::setRootTable(Table& table) {
+        sq_resetobject(&obj);
+        sq_pushobject(vm, table.getRaw());
+        sq_getstackobj(vm, -1, &obj);
+        sq_addref(vm, &obj);
+        sq_setroottable(vm);
     }
 
     void VM::setPrintFunc(SqPrintFunc printFunc, SqErrorFunc errorFunc) {
@@ -99,13 +178,34 @@ namespace ssq {
         return foreignPtr;
     }
 
+    bool VM::isThread() const {
+        return VM::getMain(vm).getHandle() != vm;
+    }
+
+    SQInteger VM::getState() const {
+        return sq_getvmstate(vm);
+    }
+
     SQInteger VM::getTop() const {
         return sq_gettop(vm);
     }
 
     Script VM::compileSource(const char* source, const char* name) {
         Script script(vm);
-        if(SQ_FAILED(sq_compilebuffer(vm, source, strlen(source), name, true))){
+        if (SQ_FAILED(sq_compilebuffer(vm, source, strlen(source), name, true))) {
+            if (!compileException)throw CompileException(vm, "Source cannot be compiled!");
+            throw *compileException;
+        }
+
+        sq_getstackobj(vm,-1,&script.getRaw());
+        sq_addref(vm, &script.getRaw());
+        sq_pop(vm, 1);
+        return script;
+    }
+
+    Script VM::compileSource(std::istream& source, const char* name) {
+        Script script(vm);
+        if (SQ_FAILED(sq_compile(vm, squirrel_istream_read_char, &source, name, SQTrue))) {
             if (!compileException)throw CompileException(vm, "Source cannot be compiled!");
             throw *compileException;
         }
@@ -129,20 +229,91 @@ namespace ssq {
         return script;
     }
 
-    void VM::run(const Script& script) const {
-        if(!script.isEmpty()) {
-            SQInteger top = sq_gettop(vm);
-            sq_pushobject(vm, script.getRaw());
-            sq_pushroottable(vm);
-            SQRESULT result = sq_call(vm, 1, false, true);
-            sq_settop(vm, top);
-            if(SQ_FAILED(result)){
+    void VM::run(const Script& script) {
+        if (script.isEmpty()) {
+            throw RuntimeException(vm, "Empty script object.");
+        }
+
+        const SQInteger old_top = sq_gettop(vm);
+        sq_pushobject(vm, script.getRaw());
+        sq_pushroottable(vm);
+        try {
+            if (SQ_FAILED(sq_call(vm, 1, SQFalse, SQTrue))) {
+                if (!runtimeException)
+                    throw RuntimeException(vm, "Error running script!");
                 throw *runtimeException;
             }
+
+            // Root table may've changed
+            sq_resetobject(&obj);
+            sq_pushroottable(vm);
+            sq_getstackobj(vm, -1, &obj);
+            sq_addref(vm, &obj);
+            sq_pop(vm, 1);
+
+            if (sq_getvmstate(vm) != SQ_VMSTATE_SUSPENDED) {
+                sq_settop(vm, old_top);
+            }
         }
-        else {
-            throw RuntimeException(vm, "Empty script object");
+        catch (const RuntimeException&) {
+            sq_settop(vm, old_top);
+            throw;
         }
+        catch (...) {
+            sq_settop(vm, old_top);
+            throw RuntimeException(vm, "Running script failed!");
+        }
+    }
+
+    Object VM::runAndReturn(const Script& script) {
+        if (script.isEmpty()) {
+            throw RuntimeException(vm, "Empty script object.");
+        }
+
+        const SQInteger old_top = sq_gettop(vm);
+        sq_pushobject(vm, script.getRaw());
+        sq_pushroottable(vm);
+        try {
+            if (SQ_FAILED(sq_call(vm, 1, SQTrue, SQTrue))) {
+                if (!runtimeException)
+                    throw RuntimeException(vm, "Error running script!");
+                throw *runtimeException;
+            }
+
+            // Root table may've changed
+            sq_resetobject(&obj);
+            sq_pushroottable(vm);
+            sq_getstackobj(vm, -1, &obj);
+            sq_addref(vm, &obj);
+            sq_pop(vm, 1);
+
+            Object ret = detail::pop<Object>(vm, -1);
+            sq_settop(vm, old_top);
+            return ret;
+        }
+        catch (const RuntimeException&) {
+            sq_settop(vm, old_top);
+            throw;
+        }
+        catch (...) {
+            sq_settop(vm, old_top);
+            throw RuntimeException(vm, "Running script failed!");
+        }
+    }
+
+    VM VM::newThread(size_t stackSize) const {
+        HSQUIRRELVM thread = sq_newthread(vm, stackSize);
+        if (!thread)
+            throw RuntimeException(vm, "Failed to create thread!");
+
+        HSQOBJECT threadObject;
+        sq_resetobject(&threadObject);
+        if (SQ_FAILED(sq_getstackobj(vm, -1, &threadObject)))
+          throw RuntimeException(vm, "Failed to get Squirrel thread from stack!");
+        sq_addref(vm, &threadObject);
+
+        sq_pop(vm, 1); // pop thread
+        return VM(threadObject);
     }
 
     Enum VM::addEnum(const char* name) {
@@ -165,13 +336,13 @@ namespace ssq {
     }
 
     Object VM::callAndReturn(SQUnsignedInteger nparams, SQInteger top) const {
-        if(SQ_FAILED(sq_call(vm, 1 + nparams, true, true))){
+        if(SQ_FAILED(sq_call(vm, 1 + nparams, SQTrue, SQTrue))) {
             sq_settop(vm, top);
-            if (runtimeException == nullptr)
-                throw RuntimeException(vm, "Unknown squirrel runtime error");
+            if (!runtimeException)
+                throw RuntimeException(vm, "Error running script!");
             throw *runtimeException;
         }
-            
+
         Object ret(vm);
         sq_getstackobj(vm, -1, &ret.getRaw());
         sq_addref(vm, &ret.getRaw());
@@ -219,7 +390,9 @@ namespace ssq {
             }
         }
 
-        VM::get(vm)->runtimeException.reset(new RuntimeException(
+        VM* ssq_vm = VM::get(vm);
+        if (!ssq_vm) return 0;
+        ssq_vm->runtimeException.reset(new RuntimeException(
             vm,
             sErr,
             source,
@@ -235,7 +408,9 @@ namespace ssq {
         const SQChar* source,
         SQInteger line,
         SQInteger column) {
-        VM::get(vm)->compileException.reset(new CompileException(
+        VM* ssq_vm = VM::get(vm);
+        if (!ssq_vm) return;
+        ssq_vm->compileException.reset(new CompileException(
             vm,
             desc,
             source,
@@ -258,11 +433,11 @@ namespace ssq {
 
 	namespace detail {
     void addClassObj(HSQUIRRELVM vm, size_t hashCode, const HSQOBJECT& obj) {
-        VM::get(vm)->addClassObj(hashCode, obj);
+        VM::getMain(vm).addClassObj(hashCode, obj);
     }
 
 		const HSQOBJECT& getClassObj(HSQUIRRELVM vm, size_t hashCode) {
-        return VM::get(vm)->getClassObj(hashCode);
+        return VM::getMain(vm).getClassObj(hashCode);
     }
   }
 }
