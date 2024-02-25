@@ -62,6 +62,12 @@ namespace ssq {
         sq_pop(vm, 1);
     }
 
+    void Array::clear() {
+        sq_pushobject(vm, obj);
+        sq_clear(vm, -1);
+        sq_pop(vm, 1);
+    }
+
     Array& Array::operator = (const Array& other){
         Object::operator = (other);
         return *this;

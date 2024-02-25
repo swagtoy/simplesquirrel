@@ -99,6 +99,10 @@ namespace ssq {
         */
         void pop();
         /**
+         * @brief Removes all elements from this array
+         */
+        void clear();
+        /**
         * @brief Returns an element from the specific index
         * @throws TypeException if the index is out of bounds or element cannot be returned
         */

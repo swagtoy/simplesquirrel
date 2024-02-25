@@ -171,6 +171,10 @@ namespace ssq {
          */
         void remove(const char* name);
         /**
+         * @brief Removes all entries from this table
+         */
+        void clear();
+        /**
          * @brief Sets a table as delegate for this table
          */
         void setDelegate(Table& table);

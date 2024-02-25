@@ -114,6 +114,12 @@ namespace ssq {
         sq_pop(vm, 1); // pop table
     }
 
+    void Table::clear() {
+        sq_pushobject(vm, obj);
+        sq_clear(vm, -1);
+        sq_pop(vm, 1); // pop table
+    }
+
     void Table::setDelegate(Table& table) {
         const SQInteger old_top = sq_gettop(vm);
         sq_pushobject(vm, obj);
