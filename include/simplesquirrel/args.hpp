@@ -17,8 +17,8 @@ namespace ssq {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
     namespace detail {
-        SSQ_API void addClassObj(HSQUIRRELVM vm, size_t hashCode, const HSQOBJECT& obj);
-        SSQ_API const HSQOBJECT& getClassObj(HSQUIRRELVM vm, size_t hashCode);
+        SSQ_API void addClassObj(size_t hashCode, const HSQOBJECT& obj);
+        SSQ_API const HSQOBJECT& getClassObj(size_t hashCode);
 
         template<class T>
         static SQInteger classDestructor(SQUserPointer ptr, SQInteger size) {
@@ -289,7 +289,7 @@ namespace ssq {
         inline void pushByCopy(HSQUIRRELVM vm, const T& value) {
             static const auto hashCode = typeid(T*).hash_code();
             try {
-                sq_pushobject(vm, getClassObj(vm, hashCode));
+                sq_pushobject(vm, getClassObj(hashCode));
                 sq_createinstance(vm, -1);
                 sq_remove(vm, -2);
 
@@ -464,7 +464,7 @@ namespace ssq {
             }
             else {
                 try {
-                    sq_pushobject(vm, getClassObj(vm, hashCode));
+                    sq_pushobject(vm, getClassObj(hashCode));
                     sq_createinstance(vm, -1);
                     sq_remove(vm, -2);
                     sq_setinstanceup(vm, -1, reinterpret_cast<SQUserPointer>(value));

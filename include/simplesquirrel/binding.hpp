@@ -112,7 +112,7 @@ namespace ssq {
 
             HSQOBJECT obj;
             sq_getstackobj(vm, -1, &obj);
-            addClassObj(vm, hashCode, obj);
+            addClassObj(hashCode, obj);
 
             sq_getstackobj(vm, -1, &clsObj.getRaw());
             sq_addref(vm, &clsObj.getRaw());
@@ -165,7 +165,7 @@ namespace ssq {
 
             HSQOBJECT obj;
             sq_getstackobj(vm, -1, &obj);
-            addClassObj(vm, hashCode, obj);
+            addClassObj(hashCode, obj);
 
             sq_getstackobj(vm, -1, &clsObj.getRaw());
             sq_addref(vm, &clsObj.getRaw());

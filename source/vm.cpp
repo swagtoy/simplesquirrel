@@ -423,21 +423,23 @@ namespace ssq {
 
     }
 
-	void VM::addClassObj(size_t hashCode, const HSQOBJECT& obj) {
-		classMap[hashCode] = obj;
-	}
+    std::unordered_map<size_t, HSQOBJECT> VM::classMap = {};
 
-	const HSQOBJECT& VM::getClassObj(size_t hashCode) {
-		return classMap.at(hashCode);
-	}
-
-	namespace detail {
-    void addClassObj(HSQUIRRELVM vm, size_t hashCode, const HSQOBJECT& obj) {
-        VM::getMain(vm).addClassObj(hashCode, obj);
+    void VM::addClassObj(size_t hashCode, const HSQOBJECT& obj) {
+        classMap[hashCode] = obj;
     }
 
-		const HSQOBJECT& getClassObj(HSQUIRRELVM vm, size_t hashCode) {
-        return VM::getMain(vm).getClassObj(hashCode);
+    const HSQOBJECT& VM::getClassObj(size_t hashCode) {
+        return classMap.at(hashCode);
     }
-  }
+
+    namespace detail {
+        void addClassObj(size_t hashCode, const HSQOBJECT& obj) {
+            VM::addClassObj(hashCode, obj);
+        }
+
+        const HSQOBJECT& getClassObj(size_t hashCode) {
+            return VM::getClassObj(hashCode);
+        }
+    }
 }

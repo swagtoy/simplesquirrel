@@ -318,11 +318,11 @@ namespace ssq {
         /**
         * @brief Add registered class object into the table of known classes
         */
-        void addClassObj(size_t hashCode, const HSQOBJECT& obj);
+        static void addClassObj(size_t hashCode, const HSQOBJECT& obj);
         /**
         * @brief Get registered class object from hash code
         */
-        const HSQOBJECT& getClassObj(size_t hashCode);
+        static const HSQOBJECT& getClassObj(size_t hashCode);
         /**
         * @brief Copy assingment operator
         */
@@ -332,10 +332,11 @@ namespace ssq {
         */
         VM& operator = (VM&& other) NOEXCEPT;
     private:
+        static std::unordered_map<size_t, HSQOBJECT> classMap;
+
         HSQOBJECT threadObj;
         std::unique_ptr<CompileException> compileException;
         std::unique_ptr<RuntimeException> runtimeException;
-        std::unordered_map<size_t, HSQOBJECT> classMap;
         void* foreignPtr;
 
         /**
@@ -354,11 +355,8 @@ namespace ssq {
         Object callAndReturn(SQUnsignedInteger nparams, SQInteger top) const;
 
         static void defaultPrintFunc(HSQUIRRELVM vm, const SQChar *s, ...);
-
         static void defaultErrorFunc(HSQUIRRELVM vm, const SQChar *s, ...);
-
         static SQInteger defaultRuntimeErrorFunc(HSQUIRRELVM vm);
-
         static void defaultCompilerErrorFunc(HSQUIRRELVM vm, const SQChar* desc, const SQChar* source, SQInteger line, SQInteger column);
     };
 }
