@@ -68,6 +68,9 @@ namespace ssq {
         catch (const NotFoundException&) {
             return addTable(name);
         }
+        catch (const TypeException&) {
+            return addTable(name);
+        }
     }
 
     bool Table::hasEntry(const char* name) const {
