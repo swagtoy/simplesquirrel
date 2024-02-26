@@ -47,6 +47,7 @@ namespace ssq {
 
         template<class T, class... Args, size_t... Is>
         static T* callConstructor(HSQUIRRELVM vm, FuncPtr<T*(Args...)>* funcPtr, index_list<Is...>) {
+            (void)vm; // Fix unused parameter warning.
             return funcPtr->ptr->operator()(detail::pop<typename std::remove_reference<Args>::type>(vm, Is + 2)...);
         }
 

@@ -80,7 +80,7 @@ namespace ssq {
         template <typename ...B>
         static void paramPacker(std::string& str) {
             int _[] = { 0, (paramPackerType<B>(str), 0)... };
-            (void)_;
+            (void)_; // Fix unused parameter warning.
         }
 
         template<typename Ret, typename... Args>
@@ -182,6 +182,7 @@ namespace ssq {
 
         template<class Ret, class... Args, size_t... Is>
         static Ret callGlobal(HSQUIRRELVM vm, FuncPtr<Ret(Args...)>* funcPtr, index_list<Is...>) {
+            (void)vm; // Fix unused parameter warning.
             return funcPtr->ptr->operator()(detail::pop<typename std::remove_reference<Args>::type>(vm, Is + 1)...);
         }
 
