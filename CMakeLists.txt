@@ -11,14 +11,14 @@ include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Select build type")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
-option(BUILD_TESTS "Build tests" OFF)
-option(BUILD_EXAMPLES "Build examples" OFF)
-option(BUILD_INSTALL "Install library" ON)
+option(SSQ_BUILD_TESTS "Build tests" OFF)
+option(SSQ_BUILD_EXAMPLES "Build examples" OFF)
+option(SSQ_BUILD_INSTALL "Install library" ON)
 
-option(USE_SQ_SUBMODULE "Use the squirrel submodule as opposed to the system squirrel" ON)
+option(SSQ_USE_SQ_SUBMODULE "Use the squirrel submodule as opposed to the system squirrel" ON)
 
 # Add third party libraries
-if(USE_SQ_SUBMODULE)
+if(SSQ_USE_SQ_SUBMODULE)
   add_subdirectory("libs/squirrel")
 else()
   find_library(SQUIRREL names squirrel)
@@ -38,7 +38,7 @@ add_library(${PROJECT_NAME}_static STATIC ${SOURCES} ${HEADERS})
 add_library(${PROJECT_NAME}-static ALIAS ${PROJECT_NAME}_static)
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
-if(USE_SQ_SUBMODULE)
+if(SSQ_USE_SQ_SUBMODULE)
   include_directories(${PROJECT_SOURCE_DIR}/libs/squirrel/include)
   target_link_libraries(${PROJECT_NAME} squirrel_static sqstdlib_static)
 else()
@@ -57,7 +57,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # Install
-if(BUILD_INSTALL)
+if(SSQ_BUILD_INSTALL)
   if(MSVC)
       INSTALL(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION bin OPTIONAL)
   endif()
@@ -67,13 +67,13 @@ if(BUILD_INSTALL)
 endif()
 
 # Build Tests
-if(BUILD_TESTS)
+if(SSQ_BUILD_TESTS)
     # Enable testing (done by catch.hpp)
     enable_testing()
     add_subdirectory(tests)
 endif()
 
 # Build Examples 
-if(BUILD_TESTS)
+if(SSQ_BUILD_TESTS)
     add_subdirectory(examples)
 endif()
