@@ -2,6 +2,7 @@
 #include <sqstdstring.h>
 #include <sqstdsystem.h>
 #include <sqstdmath.h>
+#include <sqstdaux.h>
 #include <sqstdblob.h>
 #include <sqstdio.h>
 #include <forward_list>
@@ -168,6 +169,10 @@ namespace ssq {
 
     void VM::setCompileErrorFunc(SqCompileErrorFunc compileErrorFunc) {
         sq_setcompilererrorhandler(vm, compileErrorFunc);
+    }
+
+    void VM::setStdErrorFunc() {
+        sqstd_seterrorhandlers(vm);
     }
 
     void VM::setForeignPtr(void* ptr) {

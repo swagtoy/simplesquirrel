@@ -119,6 +119,10 @@ namespace ssq {
         */
         void setCompileErrorFunc(SqCompileErrorFunc compileErrorFunc);
         /**
+        * @brief Registers runtime and compilation error functions from the Squirrel standard library
+        */
+        void setStdErrorFunc();
+        /**
         * @brief Saves an arbitrary user-defined pointer
         */
         void setForeignPtr(void* ptr);
