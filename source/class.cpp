@@ -73,7 +73,7 @@ namespace ssq {
         sq_pushstring(vm, name, strlen(name));
 
         if (SQ_FAILED(sq_get(vm, -2))) {
-            // Does not exists
+            // Does not exist
             sq_pop(vm, 1);
 
             // Create one
@@ -81,7 +81,15 @@ namespace ssq {
             sq_newtable(vm);
             sq_getstackobj(vm, -1, &table.getRaw());
             sq_addref(vm, &table.getRaw());
-            sq_pop(vm, 1);
+
+            // Set the root table as a delegate
+            sq_pushroottable(vm);
+            if (SQ_FAILED(sq_setdelegate(vm, -2))) {
+                sq_pop(vm, 1); // Pop table
+                throw ssq::RuntimeException(vm, "Cannot set root table as class table delegate!");
+            }
+
+            sq_pop(vm, 1); // Pop table
 
             sq_pushobject(vm, obj); // Push class obj
             sq_pushstring(vm, name, strlen(name));
@@ -104,33 +112,51 @@ namespace ssq {
     }
 
     SQInteger Class::dlgGetStub(HSQUIRRELVM vm) {
-        // Find the set method in the set table
-        sq_push(vm, 2);
-        if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
+        // To get an entry from the "_get" table, first search for it, without employing delegation.
+        // If found, that means it's a member variable, exposed from C++.
+        sq_push(vm, 2); // Push entry key
+        if (!SQ_SUCCEEDED(sq_rawget(vm, -2))) {
+            // If nothing was found, perform a second search, this time employing delegation.
+            // If found, the entry originates from the root table, added as a delegate, meaning it should only be pushed to the stack.
+            sq_push(vm, 2); // Push entry key
+            if (SQ_SUCCEEDED(sq_get(vm, -2))) {
+                return 1; // Result is pushed in the stack
+            }
+
             const SQChar* s;
             sq_getstring(vm, 2, &s);
-            return sq_throwerror(vm, "Variable not found");
+            return sq_throwerror(vm, ("Variable not found: " + std::string(s)).c_str());
         }
 
-        // push 'this'
+        // Push 'this'
         sq_push(vm, 1);
 
-        // Call the setter
+        // Call the getter
         sq_call(vm, 1, SQTrue, SQTrue);
         return 1;
     }
 
     SQInteger Class::dlgSetStub(HSQUIRRELVM vm) {
-        sq_push(vm, 2);
-        if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
+        // To get an entry from the "_set" table, first search for it, without employing delegation.
+        // If found, that means it's a member variable, exposed from C++.
+        sq_push(vm, 2); // Push entry key
+        if (!SQ_SUCCEEDED(sq_rawget(vm, -2))) {
+            // If nothing was found, perform a second search, this time employing delegation.
+            // If found, the entry originates from the root table, added as a delegate, meaning it should only be pushed to the stack.
+            sq_push(vm, 2); // Push entry key
+            if (SQ_SUCCEEDED(sq_get(vm, -2))) {
+                return 1; // Result is pushed in the stack
+            }
+
             const SQChar* s;
             sq_getstring(vm, 2, &s);
-            return sq_throwerror(vm, "Variable not found");
+            return sq_throwerror(vm, ("Variable not found: " + std::string(s)).c_str());
         }
 
+        // Push 'this'
         sq_push(vm, 1);
 
-        // Call the getter
+        // Call the setter
         sq_push(vm, 3);
         sq_call(vm, 2, SQTrue, SQTrue);
         return 1;
