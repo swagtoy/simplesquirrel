@@ -114,16 +114,11 @@ namespace ssq {
         }
         template<typename T, typename V>
         void addVar(const std::string& name, V T::* ptr, bool isStatic = false) {
-            findTable("_get", tableGet, dlgGetStub);
-            findTable("_set", tableSet, dlgSetStub);
-
             bindVar<T, V>(name, ptr, tableGet.getRaw(), varGetStub<T, V>, isStatic);
             bindVar<T, V>(name, ptr, tableSet.getRaw(), varSetStub<T, V>, isStatic);
         }
         template<typename T, typename V>
         void addConstVar(const std::string& name, V T::* ptr, bool isStatic = false) {
-            findTable("_get", tableGet, dlgGetStub);
-
             bindVar<T, V>(name, ptr, tableGet.getRaw(), varGetStub<T, V>, isStatic);
         }
         /**

@@ -10,18 +10,22 @@ namespace ssq {
 
     }
 
-    Class::Class(HSQUIRRELVM vm) :Object(vm), tableSet(vm), tableGet(vm) {
-
+    Class::Class(HSQUIRRELVM vm) :Object(vm), tableSet(), tableGet() {
+        // Create "_get" and "_set" tables
+        findTable("_get", tableGet, dlgGetStub);
+        findTable("_set", tableSet, dlgSetStub);
     }
 
-    Class::Class(const Object& object) : Object(object.getHandle())
-        , tableSet(object.getHandle()), tableGet(object.getHandle()) {
-
+    Class::Class(const Object& object) : Object(object.getHandle()), tableSet(), tableGet() {
         if (object.getType() != Type::CLASS) throw TypeException("bad cast", "CLASS", object.getTypeStr());
         if (vm != nullptr && !object.isEmpty()) {
             obj = object.getRaw();
             sq_addref(vm, &obj);
         }
+
+        // Create "_get" and "_set" tables
+        findTable("_get", tableGet, dlgGetStub);
+        findTable("_set", tableSet, dlgSetStub);
     }
 
     Class::Class(const Class& other) :Object(other), tableSet(other.tableSet), tableGet(other.tableGet) {
