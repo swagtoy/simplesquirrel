@@ -186,6 +186,7 @@ namespace ssq {
             return funcPtr->ptr->operator()(detail::pop<typename std::remove_reference<Args>::type>(vm, Is + 1)...);
         }
 
+        /* Functions with return values */
         template<int offet, typename R, typename... Args>
         struct func {
             static SQInteger global(HSQUIRRELVM vm) {
@@ -200,6 +201,21 @@ namespace ssq {
                 }
             }
         };
+        template<int offet, typename R, typename... Args>
+        struct func<offet, std::vector<R>, Args...> {
+            static SQInteger global(HSQUIRRELVM vm) {
+                try {
+                    FuncPtr<std::vector<R>(Args...)>* funcPtr;
+                    sq_getuserdata(vm, -1, reinterpret_cast<void**>(&funcPtr), nullptr);
+
+                    push<R>(vm, std::forward<std::vector<R>>(callGlobal(vm, funcPtr, index_range<offet, sizeof...(Args) + offet>())));
+                    return 1;
+                } catch (std::exception& e) {
+                    return sq_throwerror(vm, e.what());
+                }
+            }
+        };
+        /* Function without a return value */
         template<int offet, typename... Args>
         struct func<offet, void, Args...> {
             static SQInteger global(HSQUIRRELVM vm) {
@@ -214,6 +230,7 @@ namespace ssq {
                 }
             }
         };
+        /* Function with a return value, signifying whether it has pushed returned data to the Squirrel stack */
         template<int offet, typename... Args>
         struct func<offet, SQInteger, Args...> {
             static SQInteger global(HSQUIRRELVM vm) {

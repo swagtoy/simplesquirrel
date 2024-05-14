@@ -486,6 +486,18 @@ namespace ssq {
         inline void push(HSQUIRRELVM vm, const T& value) { 
             pushByPtr<typename std::remove_pointer<typename std::remove_cv<T>::type>::type>(vm, value);
         }
+
+        template<typename T>
+        inline void push(HSQUIRRELVM vm, const std::vector<T>& value) {
+            sq_newarray(vm, 0);
+            for (const T& val : value) {
+                push(vm, val);
+                if(SQ_FAILED(sq_arrayappend(vm, -2))) {
+                    sq_pop(vm, 2);
+                    throw RuntimeException(vm, "Failed to push value to the back of array!");
+                }
+            }
+        }
     }
 #endif
 }
