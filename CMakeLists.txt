@@ -20,6 +20,7 @@ option(SSQ_USE_SQ_SUBMODULE "Use the squirrel submodule as opposed to the system
 # Add third party libraries
 if(SSQ_USE_SQ_SUBMODULE)
   add_subdirectory("libs/squirrel")
+  set(SQUIRREL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs/squirrel/include)
 else()
   find_library(SQUIRREL names squirrel)
   find_library(SQUIRREL_STDLIB names sqstdlib)
@@ -39,7 +40,6 @@ add_library(${PROJECT_NAME}-static ALIAS ${PROJECT_NAME}_static)
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
 if(SSQ_USE_SQ_SUBMODULE)
-  include_directories(${PROJECT_SOURCE_DIR}/libs/squirrel/include)
   target_link_libraries(${PROJECT_NAME} squirrel_static sqstdlib_static)
 else()
   target_link_libraries(${PROJECT_NAME} squirrel sqstdlib)
