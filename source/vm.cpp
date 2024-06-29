@@ -51,8 +51,9 @@ namespace ssq {
         registerStdlib(flags);
 
         setPrintFunc(&VM::defaultPrintFunc, &VM::defaultErrorFunc);
-        setRuntimeErrorFunc(&VM::defaultRuntimeErrorFunc);
-        setCompileErrorFunc(&VM::defaultCompilerErrorFunc);
+        //setRuntimeErrorFunc(&VM::defaultRuntimeErrorFunc);
+        //setCompileErrorFunc(&VM::defaultCompilerErrorFunc);
+        setStdErrorFunc(); // Use error functions from the Squirrel standard library by default, because they're more verbose (ex. callstacks)
 
         sq_resetobject(&threadObj);
         sq_resetobject(&obj);
@@ -124,8 +125,8 @@ namespace ssq {
         using std::swap;
         Object::swap(other);
         swap(threadObj, other.threadObj);
-        swap(runtimeException, other.runtimeException);
-        swap(compileException, other.compileException);
+        //swap(runtimeException, other.runtimeException);
+        //swap(compileException, other.compileException);
         swap(classMap, other.classMap);
         swap(foreignPtr, other.foreignPtr);
     }
@@ -198,8 +199,9 @@ namespace ssq {
     Script VM::compileSource(const char* source, const char* name) {
         Script script(vm);
         if (SQ_FAILED(sq_compilebuffer(vm, source, strlen(source), name, true))) {
-            if (!compileException)throw CompileException(vm, "Source cannot be compiled!");
-            throw *compileException;
+            //if (!compileException)
+                throw CompileException(vm, "Source cannot be compiled!");
+            //throw *compileException;
         }
 
         sq_getstackobj(vm,-1,&script.getRaw());
@@ -211,8 +213,9 @@ namespace ssq {
     Script VM::compileSource(std::istream& source, const char* name) {
         Script script(vm);
         if (SQ_FAILED(sq_compile(vm, squirrel_istream_read_char, &source, name, SQTrue))) {
-            if (!compileException)throw CompileException(vm, "Source cannot be compiled!");
-            throw *compileException;
+            //if (!compileException)
+                throw CompileException(vm, "Source cannot be compiled!");
+            //throw *compileException;
         }
 
         sq_getstackobj(vm,-1,&script.getRaw());
@@ -224,8 +227,9 @@ namespace ssq {
     Script VM::compileFile(const char* path) {
         Script script(vm);
         if (SQ_FAILED(sqstd_loadfile(vm, path, true))) {
-            if (!compileException)throw CompileException(vm, "File not found or cannot be read!");
-            throw *compileException;
+            //if (!compileException)
+                throw CompileException(vm, "File not found or cannot be read!");
+            //throw *compileException;
         }
 
         sq_getstackobj(vm, -1, &script.getRaw());
@@ -244,9 +248,9 @@ namespace ssq {
         sq_pushroottable(vm);
         try {
             if (SQ_FAILED(sq_call(vm, 1, SQFalse, SQTrue))) {
-                if (!runtimeException)
+                //if (!runtimeException)
                     throw RuntimeException(vm, "Error running script!");
-                throw *runtimeException;
+                //throw *runtimeException;
             }
 
             // Root table may've changed
@@ -280,9 +284,9 @@ namespace ssq {
         sq_pushroottable(vm);
         try {
             if (SQ_FAILED(sq_call(vm, 1, SQTrue, SQTrue))) {
-                if (!runtimeException)
+                //if (!runtimeException)
                     throw RuntimeException(vm, "Error running script!");
-                throw *runtimeException;
+                //throw *runtimeException;
             }
 
             // Root table may've changed
@@ -314,7 +318,7 @@ namespace ssq {
         HSQOBJECT threadObject;
         sq_resetobject(&threadObject);
         if (SQ_FAILED(sq_getstackobj(vm, -1, &threadObject)))
-          throw RuntimeException(vm, "Failed to get Squirrel thread from stack!");
+            throw RuntimeException(vm, "Failed to get Squirrel thread from stack!");
         sq_addref(vm, &threadObject);
 
         sq_pop(vm, 1); // pop thread
@@ -343,9 +347,9 @@ namespace ssq {
     Object VM::callAndReturn(SQUnsignedInteger nparams, SQInteger top) const {
         if(SQ_FAILED(sq_call(vm, 1 + nparams, SQTrue, SQTrue))) {
             sq_settop(vm, top);
-            if (!runtimeException)
+            //if (!runtimeException)
                 throw RuntimeException(vm, "Error running script!");
-            throw *runtimeException;
+            //throw *runtimeException;
         }
 
         Object ret(vm);
@@ -380,7 +384,7 @@ namespace ssq {
         fprintf(stderr, "\n");
         va_end(vl);
     }
-
+/*
     SQInteger VM::defaultRuntimeErrorFunc(HSQUIRRELVM vm) {
         SQStackInfos si;
         sq_stackinfos(vm, 1, &si);
@@ -423,7 +427,7 @@ namespace ssq {
             column
         ));
     }
-
+*/
     void VM::pushArgs() {
 
     }

@@ -152,15 +152,19 @@ namespace ssq {
         /**
         * @brief Returns the last compilation exception
         */
+        /*
         const CompileException& getLastCompileException() const {
             return *compileException.get();
         }
+        */
         /**
         * @brief Returns the last runtime exception
         */
+        /*
         const RuntimeException& getLastRuntimeException() const {
             return *runtimeException.get();
         }
+        */
         /**
         * @brief Compiles a script from memory
         * @details The script can be associated with a name as a second parameter.
@@ -339,8 +343,8 @@ namespace ssq {
         static std::unordered_map<size_t, HSQOBJECT> classMap;
 
         HSQOBJECT threadObj;
-        std::unique_ptr<CompileException> compileException;
-        std::unique_ptr<RuntimeException> runtimeException;
+        //std::unique_ptr<CompileException> compileException;
+        //std::unique_ptr<RuntimeException> runtimeException;
         void* foreignPtr;
 
         /**
@@ -360,8 +364,8 @@ namespace ssq {
 
         static void defaultPrintFunc(HSQUIRRELVM vm, const SQChar *s, ...);
         static void defaultErrorFunc(HSQUIRRELVM vm, const SQChar *s, ...);
-        static SQInteger defaultRuntimeErrorFunc(HSQUIRRELVM vm);
-        static void defaultCompilerErrorFunc(HSQUIRRELVM vm, const SQChar* desc, const SQChar* source, SQInteger line, SQInteger column);
+        //static SQInteger defaultRuntimeErrorFunc(HSQUIRRELVM vm);
+        //static void defaultCompilerErrorFunc(HSQUIRRELVM vm, const SQChar* desc, const SQChar* source, SQInteger line, SQInteger column);
     };
 }
 
