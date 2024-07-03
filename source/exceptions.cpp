@@ -1,7 +1,7 @@
 #include "simplesquirrel/exceptions.hpp"
 
 namespace ssq {
-    void Exception::generate_message(HSQUIRRELVM vm, const std::string& msg) {
+    void Exception::generate_message(const std::string& msg) {
         std::ostringstream out;
         out << "Squirrel exception: " << msg << " (";
 

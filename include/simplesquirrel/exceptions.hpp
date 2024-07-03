@@ -11,9 +11,11 @@ namespace ssq {
     */
     class Exception: public std::exception {
     public:
-        Exception() : message() {}
-        Exception(HSQUIRRELVM vm, const std::string& msg) : message() {
-            generate_message(vm, msg);
+        HSQUIRRELVM vm;
+
+        Exception(HSQUIRRELVM v) : message(), vm(v) {}
+        Exception(HSQUIRRELVM v, const std::string& msg) : message(), vm(v) {
+            generate_message(msg);
         }
 
         virtual const char* what() const throw() override {
@@ -21,7 +23,7 @@ namespace ssq {
         }
 
     protected:
-        void generate_message(HSQUIRRELVM vm, const std::string& msg);
+        void generate_message(const std::string& msg);
 
     private:
         std::string message;
@@ -32,10 +34,10 @@ namespace ssq {
     */
     class NotFoundException: public Exception {
     public:
-        NotFoundException(HSQUIRRELVM vm, const std::string& msg) : Exception() {
+        NotFoundException(HSQUIRRELVM v, const std::string& msg) : Exception(v) {
             std::stringstream ss;
             ss << "Not found: " << msg;
-            generate_message(vm, ss.str());
+            generate_message(ss.str());
         }
     };
     /**
@@ -44,11 +46,11 @@ namespace ssq {
     */
     class CompileException: public Exception {
     public:
-        CompileException(HSQUIRRELVM vm, const std::string& msg) : Exception(vm, msg) {}
-        CompileException(HSQUIRRELVM vm, const std::string& msg, const char* source, int line, int column) : Exception() {
+        CompileException(HSQUIRRELVM v, const std::string& msg) : Exception(v, msg) {}
+        CompileException(HSQUIRRELVM v, const std::string& msg, const char* source, int line, int column) : Exception(v) {
             std::stringstream ss;
             ss << "Compile error at " << source << ":" << line << ":" << column << " " << msg;
-            generate_message(vm, ss.str());
+            generate_message(ss.str());
         }
     };
     /**
@@ -57,10 +59,10 @@ namespace ssq {
     */
     class TypeException: public Exception {
     public:
-        TypeException(const std::string& msg, const char* expected, const char* got) : Exception() {
+        TypeException(const std::string& msg, const char* expected, const char* got) : Exception(nullptr) {
             std::stringstream ss;
             ss << "Type error " << msg << " expected: " << expected << " got: " << got;
-            generate_message(nullptr, ss.str());
+            generate_message(ss.str());
         }
     };
     /**
@@ -69,11 +71,11 @@ namespace ssq {
     */
     class RuntimeException: public Exception {
     public:
-        RuntimeException(HSQUIRRELVM vm, const std::string& msg) : Exception(vm, msg) {}
-        RuntimeException(HSQUIRRELVM vm, const std::string& msg, const char* source, const char* func, int line) : Exception() {
+        RuntimeException(HSQUIRRELVM v, const std::string& msg) : Exception(v, msg) {}
+        RuntimeException(HSQUIRRELVM v, const std::string& msg, const char* source, const char* func, int line) : Exception(v) {
             std::stringstream ss;
             ss << "Runtime error at (" << func << ") " << source << ":" << line << ": " << msg;
-            generate_message(vm, ss.str());
+            generate_message(ss.str());
         }
     };
 }
