@@ -13,8 +13,8 @@ namespace ssq {
     public:
         HSQUIRRELVM vm;
 
-        Exception(HSQUIRRELVM v) : message(), vm(v) {}
-        Exception(HSQUIRRELVM v, const std::string& msg) : message(), vm(v) {
+        Exception(HSQUIRRELVM v) : vm(v), message() {}
+        Exception(HSQUIRRELVM v, const std::string& msg) : vm(v), message() {
             generate_message(msg);
         }
 
