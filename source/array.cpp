@@ -31,24 +31,7 @@ namespace ssq {
     }
 
     std::vector<Object> Array::convertRaw() const {
-        const SQInteger old_top = sq_gettop(vm);
-        sq_pushobject(vm, obj);
-        size_t s = static_cast<size_t>(sq_getsize(vm, -1));
-
-        std::vector<Object> ret;
-        ret.reserve(s);
-
-        sq_pushnull(vm); // push iterator
-        while (SQ_SUCCEEDED(sq_next(vm, -2)))
-        {
-            // -1 is the value and -2 is the key
-            ret.push_back(detail::pop<Object>(vm, -1));
-
-            sq_pop(vm, 2); // pop key and value of this iteration
-        }
-
-        sq_settop(vm, old_top);
-        return ret;
+        return convert<Object>();
     }
 
     void Array::pop() {
