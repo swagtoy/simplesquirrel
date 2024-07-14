@@ -175,19 +175,23 @@ namespace ssq {
          */
         template<typename T>
         std::vector<T> convert() const {
+            const SQInteger old_top = sq_gettop(vm);
             sq_pushobject(vm, obj);
-            sq_clone(vm, -1);
             size_t s = static_cast<size_t>(sq_getsize(vm, -1));
+
             std::vector<T> ret;
             ret.reserve(s);
-            while(s--) {
-                if(SQ_FAILED(sq_arraypop(vm, -1, SQTrue))) {
-                    sq_pop(vm, 1);
-                    throw RuntimeException(vm, "Failed to pop value from back of the array!");
-                }
+
+            sq_pushnull(vm); // push iterator
+            while (SQ_SUCCEEDED(sq_next(vm, -2)))
+            {
+                // -1 is the value and -2 is the key
                 ret.push_back(detail::pop<T>(vm, -1));
+
+                sq_pop(vm, 2); // pop key and value of this iteration
             }
-            sq_pop(vm, 2);
+
+            sq_settop(vm, old_top);
             return ret;
         }
         /**
