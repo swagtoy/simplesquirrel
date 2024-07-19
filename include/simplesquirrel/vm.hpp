@@ -211,7 +211,8 @@ namespace ssq {
         Object callFunc(const Function& func, const Object& env, Args&&... args) const {
             static const std::size_t params = sizeof...(Args);
 
-            if(func.getNumOfParams() != params){
+            const auto funcParams = func.getNumOfParams();
+            if(params < funcParams.first || params > funcParams.second) {
                 throw RuntimeException(nullptr, "Number of arguments does not match");
             }
 
