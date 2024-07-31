@@ -121,6 +121,22 @@ namespace ssq {
             bindVar<T, V>(name, ptr, tableSet.getRaw(), varSetStub<T, V>, isStatic);
         }
         template<typename T, typename V>
+        void addVar(const std::string& name, V T::* ptr, void(T::*memsetter)(V), bool isStatic = false) {
+            findTable("_get", tableGet, dlgGetStub);
+            findTable("_set", tableSet, dlgSetStub);
+
+            bindVar<T, V>(name, ptr, tableGet.getRaw(), varGetStub<T, V>, isStatic);
+            bindSetter(name, std::function<void(T*, V)>(std::mem_fn(memsetter)), tableSet.getRaw(), isStatic);
+        }
+        template<typename T, typename V>
+        void addVar(const std::string& name, V(T::*memgetter)() const, void(T::*memsetter)(V), bool isStatic = false) {
+            findTable("_get", tableGet, dlgGetStub);
+            findTable("_set", tableSet, dlgSetStub);
+
+            bindGetter(name, std::function<V(T*)>(std::mem_fn(memgetter)), tableGet.getRaw(), isStatic);
+            bindSetter(name, std::function<void(T*, V)>(std::mem_fn(memsetter)), tableSet.getRaw(), isStatic);
+        }
+        template<typename T, typename V>
         void addConstVar(const std::string& name, V T::* ptr, bool isStatic = false) {
             findTable("_get", tableGet, dlgGetStub);
 
@@ -138,6 +154,43 @@ namespace ssq {
         void findTable(const char* name, Object& table, SQFUNCTION dlg) const;
         static SQInteger dlgGetStub(HSQUIRRELVM vm);
         static SQInteger dlgSetStub(HSQUIRRELVM vm);
+
+        template<typename T, typename V>
+        void bindGetter(const std::string& name, const std::function<V(T*)>& getter, HSQOBJECT& table, bool isStatic) {
+            auto rst = sq_gettop(vm);
+
+            sq_pushobject(vm, table);
+            sq_pushstring(vm, name.c_str(), name.size());
+
+            detail::bindUserData(vm, getter);
+
+            sq_newclosure(vm, &detail::func<0, V, T*>::global, 1);
+
+            if (SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
+                throw RuntimeException(vm, "Failed to bind member variable getter function to class!");
+            }
+
+            sq_pop(vm, 1);
+            sq_settop(vm, rst);
+        }
+        template<typename T, typename V>
+        void bindSetter(const std::string& name, const std::function<void(T*, V)>& setter, HSQOBJECT& table, bool isStatic) {
+            auto rst = sq_gettop(vm);
+
+            sq_pushobject(vm, table);
+            sq_pushstring(vm, name.c_str(), name.size());
+
+            detail::bindUserData(vm, setter);
+
+            sq_newclosure(vm, &detail::func<0, void, T*, V>::global, 1);
+
+            if (SQ_FAILED(sq_newslot(vm, -3, isStatic))) {
+                throw RuntimeException(vm, "Failed to bind member variable setter function to class!");
+            }
+
+            sq_pop(vm, 1);
+            sq_settop(vm, rst);
+        }
 
         template<typename T, typename V>
         void bindVar(const std::string& name, V T::* ptr, HSQOBJECT& table, SQFUNCTION stub, bool isStatic) {
