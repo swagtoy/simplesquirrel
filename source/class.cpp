@@ -121,16 +121,16 @@ namespace ssq {
                 return 1; // Result is pushed in the stack
             }
 
-            const SQChar* s;
-            sq_getstring(vm, 2, &s);
-            return sq_throwerror(vm, ("Variable not found: " + std::string(s)).c_str());
+            return sq_throwerror(vm, ("Variable not found: " + detail::pop<std::string>(vm, 2)).c_str());
         }
 
         // Push 'this'
         sq_push(vm, 1);
 
         // Call the getter
-        sq_call(vm, 1, SQTrue, SQTrue);
+        if (SQ_FAILED(sq_call(vm, 1, SQTrue, SQTrue))) {
+            return sq_throwerror(vm, Exception(vm, "Error calling \"" + detail::pop<std::string>(vm, 2) + "\" getter!").what());
+        }
         return 1;
     }
 
@@ -146,17 +146,19 @@ namespace ssq {
                 return 1; // Result is pushed in the stack
             }
 
-            const SQChar* s;
-            sq_getstring(vm, 2, &s);
-            return sq_throwerror(vm, ("Variable not found: " + std::string(s)).c_str());
+            return sq_throwerror(vm, ("Variable not found: " + detail::pop<std::string>(vm, 2)).c_str());
         }
 
         // Push 'this'
         sq_push(vm, 1);
 
-        // Call the setter
+        // Push the value
         sq_push(vm, 3);
-        sq_call(vm, 2, SQTrue, SQTrue);
+
+        // Call the setter
+        if (SQ_FAILED(sq_call(vm, 2, SQTrue, SQTrue))) {
+            return sq_throwerror(vm, Exception(vm, "Error calling \"" + detail::pop<std::string>(vm, 2) + "\" setter!").what());
+        }
         return 1;
     }
 }
