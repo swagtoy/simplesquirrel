@@ -68,9 +68,9 @@ namespace ssq {
         */
         template<typename T, typename... Args, typename... DefaultArgs>
         Class addClass(const char* name, const std::function<T*(Args...)>& allocator = std::bind(&detail::defaultClassAllocator<T>),
-                       const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool release = true, Class base = Class()) {
+                       DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool release = true, Class base = Class()) {
             sq_pushobject(vm, obj);
-            Class cls(detail::addClass(vm, name, allocator, defaultArgs, base.getRaw(), release));
+            Class cls(detail::addClass(vm, name, allocator, std::move(defaultArgs), base.getRaw(), release));
             sq_pop(vm, 1);
             return cls;
         }
@@ -80,18 +80,18 @@ namespace ssq {
         */
         template<typename T, typename... Args, typename... DefaultArgs>
         Class addClass(const char* name, const Class::Ctor<T(Args...)>& constructor,
-                       const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool release = true, Class base = Class()) {
+                       DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool release = true, Class base = Class()) {
             const std::function<T*(Args...)> func = &constructor.allocate;
-            return addClass<T>(name, func, defaultArgs, release, std::move(base));
+            return addClass<T>(name, func, std::move(defaultArgs), release, std::move(base));
         }
         /**
         * @brief Adds a new class type, which could inherit another existing one, to this table
         * @returns Class object references the added class
         */
         template<typename F, typename... DefaultArgs>
-        Class addClass(const char* name, const F& lambda, const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {},
+        Class addClass(const char* name, const F& lambda, DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {},
                        bool release = true, Class base = Class()) {
-            return addClass(name, detail::make_function(lambda), defaultArgs, release, std::move(base));
+            return addClass(name, detail::make_function(lambda), std::move(defaultArgs), release, std::move(base));
         }
         /**
         * @brief Adds a new abstract class type, which could inherit another existing one, to this table
@@ -109,10 +109,10 @@ namespace ssq {
         * @returns Function object references the added function
         */
         template<typename R, typename... Args, typename... DefaultArgs>
-        Function addFunc(const char* name, const std::function<R(Args...)>& func, const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}){
+        Function addFunc(const char* name, const std::function<R(Args...)>& func, DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}){
             Function ret(vm);
             sq_pushobject(vm, obj);
-            detail::addFunc(vm, name, func, defaultArgs);
+            detail::addFunc(vm, name, func, std::move(defaultArgs));
             sq_pop(vm, 1);
             return ret;
         }
@@ -121,8 +121,8 @@ namespace ssq {
         * @returns Function object that references the added function
         */
         template<typename F, typename... DefaultArgs>
-        Function addFunc(const char* name, const F& lambda, const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}) {
-            return addFunc(name, detail::make_function(lambda), defaultArgs);
+        Function addFunc(const char* name, const F& lambda, DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}) {
+            return addFunc(name, detail::make_function(lambda), std::move(defaultArgs));
         }
         /**
          * @brief Adds a new key-value pair to this table

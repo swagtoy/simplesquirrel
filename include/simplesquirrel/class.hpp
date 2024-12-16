@@ -70,11 +70,11 @@ namespace ssq {
         * @returns Function object references the added function
         */
         template <typename Return, typename Object, typename... Args, typename... DefaultArgs>
-        Function addFunc(const char* name, const std::function<Return(Object*, Args...)>& func, const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
+        Function addFunc(const char* name, const std::function<Return(Object*, Args...)>& func, DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
             if (vm == nullptr) throw RuntimeException(nullptr, "VM is not initialised");
             Function ret(vm);
             sq_pushobject(vm, obj);
-            detail::addMemberFunc(vm, name, func, defaultArgs, isStatic);
+            detail::addMemberFunc(vm, name, func, std::move(defaultArgs), isStatic);
             sq_pop(vm, 1);
             return ret;
         }
@@ -88,9 +88,9 @@ namespace ssq {
         * @returns Function object references the added function
         */
         template <typename Return, typename Object, typename... Args, typename... DefaultArgs>
-        Function addFunc(const char* name, Return(Object::*memfunc)(Args...), const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
+        Function addFunc(const char* name, Return(Object::*memfunc)(Args...), DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
             auto func = std::function<Return(Object*, Args...)>(std::mem_fn(memfunc));
-            return addFunc(name, func, defaultArgs, isStatic);
+            return addFunc(name, func, std::move(defaultArgs), isStatic);
         }
         /**
         * @brief Adds a new function type to this class
@@ -102,9 +102,9 @@ namespace ssq {
         * @returns Function object references the added function
         */
         template <typename Return, typename Object, typename... Args, typename... DefaultArgs>
-        Function addFunc(const char* name, Return(Object::*memfunc)(Args...) const, const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
+        Function addFunc(const char* name, Return(Object::*memfunc)(Args...) const, DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
             auto func = std::function<Return(Object*, Args...)>(std::mem_fn(memfunc));
-            return addFunc(name, func, defaultArgs, isStatic);
+            return addFunc(name, func, std::move(defaultArgs), isStatic);
         }
         /**
         * @brief Adds a new function type to this class
@@ -117,8 +117,8 @@ namespace ssq {
         * @returns Function object references the added function
         */
         template<typename F, typename... DefaultArgs>
-        Function addFunc(const char* name, const F& lambda, const DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
-            return addFunc(name, detail::make_function(lambda), defaultArgs, isStatic);
+        Function addFunc(const char* name, const F& lambda, DefaultArgumentsImpl<DefaultArgs...> defaultArgs = {}, bool isStatic = false) {
+            return addFunc(name, detail::make_function(lambda), std::move(defaultArgs), isStatic);
         }
         template<typename T, typename V>
         void addVar(const std::string& name, V T::* ptr, bool isStatic = false) {

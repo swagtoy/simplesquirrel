@@ -65,7 +65,7 @@ namespace ssq {
 
         template<typename... Args>
         static typename std::enable_if<(sizeof...(Args) > 0), void>::type
-        bindUserData(HSQUIRRELVM vm, const DefaultArgumentsImpl<Args...>& defaultArgs) {
+        bindUserData(HSQUIRRELVM vm, DefaultArgumentsImpl<Args...> defaultArgs) {
             auto defaultArgsStruct = reinterpret_cast<detail::DefaultArgsPtr<Args...>*>(sq_newuserdata(vm, sizeof(detail::DefaultArgsPtr<Args...>)));
             defaultArgsStruct->ptr = new DefaultArguments<Args...>(std::move(defaultArgs));
             sq_setreleasehook(vm, -1, &detail::defaultArgsReleaseHook<Args...>);
@@ -220,7 +220,7 @@ namespace ssq {
 
         template<typename T, typename... Args, typename... DefaultArgs>
         static Object addClass(HSQUIRRELVM vm, const char* name, const std::function<T*(Args...)>& allocator,
-                               const DefaultArgumentsImpl<DefaultArgs...> defaultArgs, HSQOBJECT& base, bool release = true) {
+                               DefaultArgumentsImpl<DefaultArgs...> defaultArgs, HSQOBJECT& base, bool release = true) {
             static_assert(std::is_base_of<ExposableClass, T>::value, "Exposed classes must inherit ssq::ExposableClass.");
 
             static const auto hashCode = typeid(T*).hash_code();
@@ -251,7 +251,7 @@ namespace ssq {
 
             sq_pushstring(vm, "constructor", -1);
             bindUserData<T*>(vm, allocator);
-            bindUserData(vm, defaultArgs);
+            bindUserData(vm, std::move(defaultArgs));
 
             std::string params;
             paramPacker<T*, Args...>(params);
@@ -315,14 +315,14 @@ namespace ssq {
 
         template<typename R, typename... Args, typename... DefaultArgs>
         static void addFunc(HSQUIRRELVM vm, const char* name, const std::function<R(Args...)>& func,
-                            const DefaultArgumentsImpl<DefaultArgs...>& defaultArgs) {
+                            DefaultArgumentsImpl<DefaultArgs...> defaultArgs) {
             constexpr std::size_t nparams = sizeof...(Args);
             constexpr std::size_t ndefparams = sizeof...(DefaultArgs);
 
             sq_pushstring(vm, name, strlen(name));
 
             bindUserData(vm, func);
-            bindUserData(vm, defaultArgs);
+            bindUserData(vm, std::move(defaultArgs));
 
             std::string params;
             paramPacker<void, Args...>(params);
@@ -335,14 +335,14 @@ namespace ssq {
         }
         template<typename R, typename... Args, typename... DefaultArgs>
         static void addFunc(HSQUIRRELVM vm, const char* name, const std::function<R(HSQUIRRELVM, Args...)>& func,
-                            const DefaultArgumentsImpl<DefaultArgs...>& defaultArgs) {
+                            DefaultArgumentsImpl<DefaultArgs...> defaultArgs) {
             constexpr std::size_t nparams = sizeof...(Args);
             constexpr std::size_t ndefparams = sizeof...(DefaultArgs);
 
             sq_pushstring(vm, name, strlen(name));
 
             bindUserData(vm, func);
-            bindUserData(vm, defaultArgs);
+            bindUserData(vm, std::move(defaultArgs));
 
             std::string params;
             paramPacker<void, Args...>(params);
@@ -356,14 +356,14 @@ namespace ssq {
 
         template<typename R, typename... Args, typename... DefaultArgs>
         static void addMemberFunc(HSQUIRRELVM vm, const char* name, const std::function<R(Args...)>& func,
-                                  const DefaultArgumentsImpl<DefaultArgs...>& defaultArgs, bool isStatic) {
+                                  DefaultArgumentsImpl<DefaultArgs...> defaultArgs, bool isStatic) {
             constexpr std::size_t nparams = sizeof...(Args);
             constexpr std::size_t ndefparams = sizeof...(DefaultArgs);
 
             sq_pushstring(vm, name, strlen(name));
 
             bindUserData(vm, func);
-            bindUserData(vm, defaultArgs);
+            bindUserData(vm, std::move(defaultArgs));
 
             std::string params;
             paramPacker<Args...>(params);
@@ -376,14 +376,14 @@ namespace ssq {
         }
         template<typename R, typename... Args, typename... DefaultArgs>
         static void addMemberFunc(HSQUIRRELVM vm, const char* name, const std::function<R(HSQUIRRELVM, Args...)>& func,
-                                  const DefaultArgumentsImpl<DefaultArgs...>& defaultArgs, bool isStatic) {
+                                  DefaultArgumentsImpl<DefaultArgs...> defaultArgs, bool isStatic) {
             constexpr std::size_t nparams = sizeof...(Args);
             constexpr std::size_t ndefparams = sizeof...(DefaultArgs);
 
             sq_pushstring(vm, name, strlen(name));
 
             bindUserData(vm, func);
-            bindUserData(vm, defaultArgs);
+            bindUserData(vm, std::move(defaultArgs));
 
             std::string params;
             paramPacker<Args...>(params);
