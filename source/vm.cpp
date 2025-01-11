@@ -265,16 +265,19 @@ namespace ssq {
             }
         }
         catch (const RuntimeException&) {
+            if (printCallstack) {
+                sqstd_printcallstack(vm);
+            }
             sq_settop(vm, old_top);
             throw;
         }
-        catch (...) {
+        catch (const std::exception& err) {
             sq_settop(vm, old_top);
-            throw RuntimeException(vm, "Running script failed!");
+            throw std::runtime_error(std::string("Running script failed: ") + err.what());
         }
     }
 
-    Object VM::runAndReturn(const Script& script) {
+    Object VM::runAndReturn(const Script& script, bool printCallstack) {
         if (script.isEmpty()) {
             throw RuntimeException(vm, "Empty script object.");
         }
@@ -301,12 +304,15 @@ namespace ssq {
             return ret;
         }
         catch (const RuntimeException&) {
+            if (printCallstack) {
+                sqstd_printcallstack(vm);
+            }
             sq_settop(vm, old_top);
             throw;
         }
-        catch (...) {
+        catch (const std::exception& err) {
             sq_settop(vm, old_top);
-            throw RuntimeException(vm, "Running script failed!");
+            throw std::runtime_error(std::string("Running script failed: ") + err.what());
         }
     }
 

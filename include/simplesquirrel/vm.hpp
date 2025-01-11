@@ -190,7 +190,7 @@ namespace ssq {
         * class definitions are assigned to the root table (global table).
         * @throws RuntimeException
         */
-        void run(const Script& script);
+        void run(const Script& script, bool printCallstack = false);
         /**
         * @brief Runs a script and returns its return value as an Object
         * @details When the script runs for the first time, the contens such as
@@ -198,7 +198,7 @@ namespace ssq {
         * @returns A return value as an Object
         * @throws RuntimeException
         */
-        Object runAndReturn(const Script& script);
+        Object runAndReturn(const Script& script, bool printCallstack = false);
         /**
         * @brief Calls a global function
         * @param func The instance of a function
