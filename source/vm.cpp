@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstdarg>
 #include <cstring>
+#include <algorithm>
 #include <iostream>
 
 #include "simplesquirrel/object.hpp"
@@ -55,7 +56,6 @@ namespace ssq {
         //setCompileErrorFunc(&VM::defaultCompilerErrorFunc);
         setStdErrorFunc(); // Use error functions from the Squirrel standard library by default, because they're more verbose (ex. callstacks)
 
-        sq_resetobject(&threadObj);
         sq_resetobject(&obj);
         sq_pushroottable(vm);
         sq_getstackobj(vm, -1, &obj);
@@ -63,24 +63,10 @@ namespace ssq {
         sq_pop(vm, 1);
     }
 
-    VM::VM(HSQUIRRELVM thread):Table(), foreignPtr(nullptr) {
-        assert(VM::getMain(thread).getHandle() != thread); // Assert this is not the main VM
+    VM::VM(const HSQOBJECT& threadObj):Table(), foreignPtr(nullptr) {
+        assert(threadObj._type == OT_THREAD);
 
-        vm = thread;
-
-        sq_resetobject(&threadObj);
-        sq_resetobject(&obj);
-        sq_pushroottable(vm);
-        sq_getstackobj(vm, -1, &obj);
-        sq_addref(vm, &obj);
-        sq_pop(vm, 1);
-    }
-
-    VM::VM(HSQOBJECT thread):Table(), foreignPtr(nullptr) {
-        assert(thread._type == OT_THREAD);
-
-        threadObj = thread;
-        vm = thread._unVal.pThread;
+        vm = threadObj._unVal.pThread;
         sq_setforeignptr(vm, this);
 
         sq_resetobject(&obj);
@@ -95,11 +81,19 @@ namespace ssq {
         if (vm != nullptr) {
             sq_resetobject(&obj);
 
-            HSQUIRRELVM main_vm = VM::getMain(vm).getHandle();
-            if (vm == main_vm) // This is the main VM
+            VM& mainVM = VM::getMain(vm);
+            if (&mainVM == this) { // This is the main VM
+                // Destroy all threads
+                for (HSQOBJECT& threadObj : threads) {
+                    sq_resetobject(&threadObj);
+                }
+                threads.clear();
+
+                sq_collectgarbage(vm);
                 sq_close(vm);
-            else if (!sq_isnull(threadObj)) // This is a thread, originating from simplesquirrel
-                sq_release(main_vm, &threadObj);
+            } else { // This is a thread VM, originating from simplesquirrel
+                mainVM.destroyThread(*this);
+            }
         }
         vm = nullptr;
     }
@@ -124,7 +118,6 @@ namespace ssq {
 
         using std::swap;
         Object::swap(other);
-        swap(threadObj, other.threadObj);
         //swap(runtimeException, other.runtimeException);
         //swap(compileException, other.compileException);
         swap(classMap, other.classMap);
@@ -238,7 +231,7 @@ namespace ssq {
         return script;
     }
 
-    void VM::run(const Script& script) {
+    void VM::run(const Script& script, bool printCallstack) {
         if (script.isEmpty()) {
             throw RuntimeException(vm, "Empty script object.");
         }
@@ -316,19 +309,42 @@ namespace ssq {
         }
     }
 
-    VM VM::newThread(size_t stackSize) const {
+    VM VM::newThread(size_t stackSize) {
+std::cout << stackSize << std::endl;
+        assert(VM::getMain(vm).getHandle() == vm); // Assert this is the main VM
+
         HSQUIRRELVM thread = sq_newthread(vm, stackSize);
         if (!thread)
             throw RuntimeException(vm, "Failed to create thread!");
 
-        HSQOBJECT threadObject;
-        sq_resetobject(&threadObject);
-        if (SQ_FAILED(sq_getstackobj(vm, -1, &threadObject)))
+        HSQOBJECT threadObj;
+        sq_resetobject(&threadObj);
+        if (SQ_FAILED(sq_getstackobj(vm, -1, &threadObj)))
             throw RuntimeException(vm, "Failed to get Squirrel thread from stack!");
-        sq_addref(vm, &threadObject);
+        sq_addref(vm, &threadObj);
 
-        sq_pop(vm, 1); // pop thread
-        return VM(threadObject);
+        VM threadVM(threadObj);
+        threads.push_back(std::move(threadObj));
+
+        sq_pop(vm, 1); // Pop thread
+        return threadVM;
+    }
+
+    void VM::destroyThread(VM& threadVM) {
+        assert(VM::getMain(vm).getHandle() == vm); // Assert this is the main VM
+        assert(threadVM.vm);
+
+        auto it = std::find_if(threads.begin(), threads.end(),
+            [&threadVM](const HSQOBJECT& threadObj) {
+                return threadVM.vm == threadObj._unVal.pThread;
+            });
+        assert(it != threads.end());
+
+        sq_resetobject(&*it);
+        threads.erase(it);
+
+        sq_collectgarbage(vm);
+        threadVM.vm = nullptr;
     }
 
     Enum VM::addEnum(const char* name) {

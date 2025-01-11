@@ -74,11 +74,6 @@ namespace ssq {
         */
         VM(size_t stackSize, uint32_t flags = Libs::NONE);
         /**
-        * @brief Creates a VM object for a thread VM
-        * @note Meant for temporary usage for threads, which do not originate from simplesquirrel
-        */
-        VM(HSQUIRRELVM thread);
-        /**
         * @brief Destroys the VM and all of this objects
         */
         void destroy();
@@ -282,8 +277,14 @@ namespace ssq {
         }
         /**
         * @brief Creates a new thread with a fixed stack size
+        * @param stackSize The stack size of the new thread
         */
-        VM newThread(size_t stackSize) const;
+        VM newThread(size_t stackSize);
+        /**
+        * @brief Destroy a thread created from this main VM
+        * @param threadVM Reference to the thread VM object to be destroyed
+        */
+        void destroyThread(VM& threadVM);
         /**
         * @brief Creates a new empty table
         */
@@ -343,7 +344,7 @@ namespace ssq {
     private:
         static std::unordered_map<size_t, HSQOBJECT> classMap;
 
-        HSQOBJECT threadObj;
+        std::vector<HSQOBJECT> threads; // Only used in the main VM
         //std::unique_ptr<CompileException> compileException;
         //std::unique_ptr<RuntimeException> runtimeException;
         void* foreignPtr;
@@ -351,7 +352,7 @@ namespace ssq {
         /**
         * @brief Creates a VM object for a thread
         */
-        VM(HSQOBJECT thread);
+        VM(const HSQOBJECT& threadObj);
 
         static void pushArgs();
 
