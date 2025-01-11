@@ -114,19 +114,23 @@ namespace ssq {
         template<class T, class... Args, class... DefaultArgs>
         struct classAllocatorBinding<T, DefaultArgumentsImpl<DefaultArgs...>, Args...> {
             static SQInteger call(HSQUIRRELVM vm) {
-                FuncPtr<T*(Args...)>* funcPtr;
-                sq_getuserdata(vm, -1, reinterpret_cast<void**>(&funcPtr), nullptr);
-                sq_pop(vm, 1);
+                try {
+                    FuncPtr<T*(Args...)>* funcPtr;
+                    sq_getuserdata(vm, -1, reinterpret_cast<void**>(&funcPtr), nullptr);
+                    sq_pop(vm, 1);
 
-                T* p = detail::callFunc<1, DefaultArgs...>(vm, funcPtr);
-                sq_setinstanceup(vm, 1, p);
-                sq_setreleasehook(vm, 1, &detail::classDestructor<T>);
+                    T* p = detail::callFunc<1, DefaultArgs...>(vm, funcPtr);
+                    sq_setinstanceup(vm, 1, p);
+                    sq_setreleasehook(vm, 1, &detail::classDestructor<T>);
 
-                sq_getclass(vm, 1);
-                sq_settypetag(vm, -1, reinterpret_cast<SQUserPointer>(typeid(T*).hash_code()));
-                sq_pop(vm, 1); // Pop class
+                    sq_getclass(vm, 1);
+                    sq_settypetag(vm, -1, reinterpret_cast<SQUserPointer>(typeid(T*).hash_code()));
+                    sq_pop(vm, 1); // Pop class
 
-                return sizeof...(Args);
+                    return sizeof...(Args);
+                } catch (const std::exception& e) {
+                    return sq_throwerror(vm, e.what());
+                }
             }
         };
 
@@ -136,18 +140,22 @@ namespace ssq {
         template<class T, class... Args, class... DefaultArgs>
         struct classAllocatorNoReleaseBinding<T, DefaultArgumentsImpl<DefaultArgs...>, Args...> {
             static SQInteger call(HSQUIRRELVM vm) {
-                FuncPtr<T*(Args...)>* funcPtr;
-                sq_getuserdata(vm, -1, reinterpret_cast<void**>(&funcPtr), nullptr);
-                sq_pop(vm, 1);
+                try {
+                    FuncPtr<T*(Args...)>* funcPtr;
+                    sq_getuserdata(vm, -1, reinterpret_cast<void**>(&funcPtr), nullptr);
+                    sq_pop(vm, 1);
 
-                T* p = detail::callFunc<1, DefaultArgs...>(vm, funcPtr);
-                sq_setinstanceup(vm, 1, p);
+                    T* p = detail::callFunc<1, DefaultArgs...>(vm, funcPtr);
+                    sq_setinstanceup(vm, 1, p);
 
-                sq_getclass(vm, 1);
-                sq_settypetag(vm, -1, reinterpret_cast<SQUserPointer>(typeid(T*).hash_code()));
-                sq_pop(vm, 1); // Pop class
+                    sq_getclass(vm, 1);
+                    sq_settypetag(vm, -1, reinterpret_cast<SQUserPointer>(typeid(T*).hash_code()));
+                    sq_pop(vm, 1); // Pop class
 
-                return sizeof...(Args);
+                    return sizeof...(Args);
+                } catch (const std::exception& e) {
+                    return sq_throwerror(vm, e.what());
+                }
             }
         };
 
