@@ -310,7 +310,6 @@ namespace ssq {
     }
 
     VM VM::newThread(size_t stackSize) {
-std::cout << stackSize << std::endl;
         assert(VM::getMain(vm).getHandle() == vm); // Assert this is the main VM
 
         HSQUIRRELVM thread = sq_newthread(vm, stackSize);
