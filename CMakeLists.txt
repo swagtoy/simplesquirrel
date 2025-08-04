@@ -8,9 +8,6 @@ project(simplesquirrel)
 include(${CMAKE_ROOT}/Modules/ExternalProject.cmake)
 
 # Some required properties
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Select build type")
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 option(SSQ_BUILD_TESTS "Build tests" OFF)
 option(SSQ_BUILD_EXAMPLES "Build examples" OFF)
 option(SSQ_BUILD_INSTALL "Install library" ON)
@@ -37,26 +34,36 @@ link_directories(${CMAKE_LIBRARY_PATH})
 # Add our library
 add_library(${PROJECT_NAME}_static STATIC ${SOURCES} ${HEADERS})
 add_library(${PROJECT_NAME}-static ALIAS ${PROJECT_NAME}_static)
-add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+if(NOT SSQ_BUILD_STATIC_ONLY)
+  add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+endif()
 
 if(SSQ_USE_SQ_SUBMODULE)
   target_link_libraries(${PROJECT_NAME}_static PUBLIC squirrel_static sqstdlib_static)
-  target_link_libraries(${PROJECT_NAME} PUBLIC squirrel_static sqstdlib_static)
+  if(NOT SSQ_BUILD_STATIC_ONLY)
+    target_link_libraries(${PROJECT_NAME} PUBLIC squirrel_static sqstdlib_static)
+  endif()
 else()
   target_link_libraries(${PROJECT_NAME}_static PUBLIC squirrel sqstdlib)
-  target_link_libraries(${PROJECT_NAME} PUBLIC squirrel sqstdlib)
+  if(NOT SSQ_BUILD_STATIC_ONLY)
+    target_link_libraries(${PROJECT_NAME} PUBLIC squirrel sqstdlib)
+  endif()
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE SSQ_EXPORTS=1 SSQ_DLL=1)
+if(NOT SSQ_BUILD_STATIC_ONLY)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE SSQ_EXPORTS=1 SSQ_DLL=1)
+endif()
 
 set_target_properties(${PROJECT_NAME}_static PROPERTIES
   FOLDER "simplesquirrel/lib"
   INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  FOLDER "simplesquirrel/lib"
-  INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
-)
+if(NOT SSQ_BUILD_STATIC_ONLY)
+  set_target_properties(${PROJECT_NAME} PROPERTIES
+    FOLDER "simplesquirrel/lib"
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/include"
+  )
+endif()
 
 # Install
 if(SSQ_BUILD_INSTALL)
@@ -64,7 +71,9 @@ if(SSQ_BUILD_INSTALL)
       INSTALL(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION bin OPTIONAL)
   endif()
   INSTALL(TARGETS ${PROJECT_NAME}_static ARCHIVE DESTINATION lib LIBRARY DESTINATION lib COMPONENT library)
-  INSTALL(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin COMPONENT library)
+  if(NOT SSQ_BUILD_STATIC_ONLY)
+    INSTALL(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin COMPONENT library)
+  endif()
   INSTALL(DIRECTORY include/simplesquirrel DESTINATION include)
 endif()
 
